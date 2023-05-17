@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -14,16 +15,14 @@ import victor.training.spring.web.hibernate.Comment;
 import victor.training.spring.web.hibernate.CommentRepo;
 import victor.training.spring.web.hibernate.Post;
 import victor.training.spring.web.hibernate.PostRepo;
-import victor.training.spring.web.mongo.AuthorBio;
-import victor.training.spring.web.mongo.AuthorBioRepo;
+import victor.training.spring.web.mongo.Author;
+import victor.training.spring.web.mongo.AuthorRepo;
 import victor.training.spring.web.rabbit.RabbitSender;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static java.time.LocalDateTime.now;
 
@@ -34,61 +33,74 @@ public class WebApi {
   private final PostRepo postRepo;
   private final CommentRepo commentRepo;
   private final RabbitSender rabbitSender;
-  private final AuthorBioRepo authorBioRepo;
+  private final AuthorRepo authorRepo;
   private final RestTemplate restTemplate;
 
   @PostConstruct
   public void initialDataInMongo() {
-    authorBioRepo.save(new AuthorBio().setId(1000L).setName("John DOE").setBio("Long description"));
+    authorRepo.save(new Author().setId(1000L).setName("John DOE").setBio("Long description"));
   }
 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   public record GetPostsResponse(Long id, String title) {
-  }
-
-  @GetMapping("posts")
-  public List<GetPostsResponse> posts() {
-    return postRepo.findAll().stream().map(post -> new GetPostsResponse(post.getId(), post.getTitle())).toList();
-  }
-
-  public record GetPostByIdResponse(Long id, String title, String body, List<CommentResponse> comments) {
-    public record CommentResponse(String comment, String name) {
+    GetPostsResponse(Post post) {
+      this(post.getId(), post.getTitle());
     }
   }
+  @GetMapping("posts")
+  public List<GetPostsResponse> getAllPosts() {
+    return postRepo.findAll().stream().map(GetPostsResponse::new).toList();
+  }
 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  public record GetPostByIdResponse(Long id, String title, String body, List<CommentResponse> comments) {
+    GetPostByIdResponse(Post post, List<CommentResponse> comments) {
+      this(post.getId(), post.getTitle(), post.getBody(), comments);
+    }
+    public record CommentResponse(String comment, String name) {
+      CommentResponse(Comment comment) {
+        this(comment.getComment(), comment.getName());
+      }
+    }
+  }
   @GetMapping("posts/{postId}")
-  public GetPostByIdResponse getById(@PathVariable Long postId) {
+  public GetPostByIdResponse getPostById(@PathVariable Long postId) {
     Post post = postRepo.findById(postId).orElseThrow();
     List<CommentResponse> comments = commentRepo.findByPostId(postId).stream()
-        .map(c -> new CommentResponse(c.getComment(), c.getName()))
+        .map(CommentResponse::new)
         .toList();
-    return new GetPostByIdResponse(post.getId(), post.getTitle(), post.getBody(), comments);
+    return new GetPostByIdResponse(post, comments);
   }
 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   public record CreatePostRequest(String title, String body, Long authorId) {
+    Post toPost() {
+      return new Post()
+          .setTitle(title)
+          .setBody(body)
+          .setAuthorId(authorId);
+    }
   }
-
   @PostMapping("posts")
   @Transactional
   public void createPost(@RequestBody CreatePostRequest request) {
-    Post post = postRepo.save(new Post()
-        .setTitle(request.title)
-        .setBody(request.body)
-        .setAuthorId(request.authorId));
-    commentRepo.save(new Comment().setPost(post).setComment("Posted on " + now()));
-
+    Post post = postRepo.save(request.toPost());
+    commentRepo.save(new Comment().setPostId(post.getId()).setComment("Posted on " + now()));
     rabbitSender.sendMessage("Post created: " + post.getId());
   }
 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   public record GetAuthorsResponse(Long id, String name, String email, String bio) {
+    GetAuthorsResponse(Author author, String email) {
+      this(author.getId(), author.getName(),email, author.getBio());
+    }
   }
-
   @GetMapping("authors")
-  public List<GetAuthorsResponse> getAuthors() {
+  public List<GetAuthorsResponse> getAllAuthors() {
     List<GetAuthorsResponse> list = new ArrayList<>();
-    for (AuthorBio a : authorBioRepo.findAll()) {
-      String email = fetchEmail(a.getId());
-      GetAuthorsResponse getAuthorsResponse = new GetAuthorsResponse(a.getId(), a.getName(), email, a.getBio());
-      list.add(getAuthorsResponse);
+    for (Author author : authorRepo.findAll()) {
+      String email = fetchEmail(author.getId());
+      list.add(new GetAuthorsResponse(author, email));
     }
     return list;
   }
@@ -97,25 +109,33 @@ public class WebApi {
     return restTemplate.getForObject("http://localhost:9999/contact/" + authorId + "/email", String.class);
   }
 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   record CreateCommentRequest(String comment) {
   }
-
+  @PreAuthorize("isAuthenticated()")
   @PostMapping("post/{postId}/comments")
-  public void createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request, Principal principal) {
+  public void createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request) {
     Post post = postRepo.findById(postId).orElseThrow();
     boolean safe = checkOffensive(post.getBody(), request.comment);
     boolean authorAllows = checkAuthorAllowsComments(post.getAuthorId());
     if (safe && authorAllows) {
-      String name = principal != null ? principal.getName() : "anonymous";
-//      String name = SecurityContextHolder.getContext().getAuthentication().getName();
-      commentRepo.save(new Comment().setName(name).setComment(request.comment).setPost(post));
+      commentRepo.save(createComment(request.comment, post.getId()));
     } else {
       throw new IllegalArgumentException("Comment Rejected");
     }
   }
 
+  private static Comment createComment(String comment, Long postId) {
+    String loggedInUser = SecurityContextHolder.getContext().getAuthentication().getName();
+    return new Comment()
+        .setName(loggedInUser)
+        .setComment(comment)
+        .setPostId(postId);
+  }
+
   private boolean checkAuthorAllowsComments(Long authorId) {
-    return Boolean.parseBoolean(restTemplate.getForObject("http://localhost:9999/author/" + authorId + "/comments", String.class));
+    String result = restTemplate.getForObject("http://localhost:9999/author/" + authorId + "/comments", String.class);
+    return Boolean.parseBoolean(result);
   }
 
   private boolean checkOffensive(String body, String comment) {
@@ -125,10 +145,12 @@ public class WebApi {
     return "OK".equals(result);
   }
 
+  //region redirect / to /swagger-ui.html
   @GetMapping
   public ResponseEntity<Void> redirectRootToSwagger() {
     HttpHeaders headers = new HttpHeaders();
     headers.setLocation(URI.create("/swagger-ui.html"));
     return new ResponseEntity<>(headers, HttpStatus.FOUND);
   }
+  //endregion
 }

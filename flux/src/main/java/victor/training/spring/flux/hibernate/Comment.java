@@ -1,4 +1,4 @@
-package victor.training.spring.web.hibernate;
+package victor.training.spring.flux.hibernate;
 
 import lombok.Data;
 
@@ -6,9 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import java.time.LocalDateTime;
-
-import static java.time.LocalDateTime.now;
 
 @Data // i'm sorry
 @Entity
@@ -20,5 +17,4 @@ public class Comment {
 
   private String comment;
   private String name;
-  private LocalDateTime createdAt = now();
 }

@@ -19,8 +19,8 @@ create table public.comment
     id      bigint not null
         primary key,
     comment varchar(255),
-    created_at timestamp,
     name    varchar(255),
+    created_at timestamp,
     post_id bigint
         constraint FK_COMMENT_POST
             references public.post
