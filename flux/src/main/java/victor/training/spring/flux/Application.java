@@ -1,4 +1,4 @@
-package victor.training.spring.web;
+package victor.training.spring.flux;
 
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -10,15 +10,15 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import victor.training.spring.web.jooq.tables.Book;
+import victor.training.spring.flux.jooq.tables.Book;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static victor.training.spring.web.jooq.Tables.AUTHOR;
-import static victor.training.spring.web.jooq.Tables.BOOK;
-import static victor.training.spring.web.jooq.tables.AuthorBook.AUTHOR_BOOK;
+import static victor.training.spring.flux.jooq.Tables.AUTHOR;
+import static victor.training.spring.flux.jooq.Tables.BOOK;
+import static victor.training.spring.flux.jooq.tables.AuthorBook.AUTHOR_BOOK;
 
 @Slf4j
 @SuppressWarnings("ALL")

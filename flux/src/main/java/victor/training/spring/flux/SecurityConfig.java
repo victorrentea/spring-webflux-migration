@@ -1,4 +1,4 @@
-package victor.training.spring.web;
+package victor.training.spring.flux;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

@@ -16,7 +16,7 @@
 
     <modules>
         <module>web</module>
-        <module>webflux</module>
+        <module>flux</module>
     </modules>
 
     <properties>
@@ -76,7 +76,7 @@
     <build>
         <plugins>
             <!-- Used to regenerate Java classes after tables are updated -->
-            <!--<plugin>
+            <plugin>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-codegen-maven</artifactId>
                 <version>3.16.0</version>
@@ -88,23 +88,23 @@
                         </goals>
                         <configuration>
                             <jdbc>
-                                <driver>org.h2.Driver</driver>
-                                <url>jdbc:h2:tcp://localhost:9092/~/test</url>
-                                <user>sa</user>
-                                <password>sa</password>
+                                <url>jdbc:postgresql://localhost:5432/postgres</url>
+                                <driver>org.postgresql.Driver</driver>
+                                <user>postgres</user>
+                                <password>secret</password>
                             </jdbc>
                             <generator>
                                 <database>
-                                    <inputSchema>PUBLIC</inputSchema>
+                                    <inputSchema>public</inputSchema>
                                 </database>
                                 <target>
-                                    <packageName>victor.training.spring.webtoflux.table</packageName>
+                                    <packageName>victor.training.spring.flux.jooq</packageName>
                                 </target>
                             </generator>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
 
