@@ -2,6 +2,7 @@ package victor.training.spring.flux;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.DSLContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,8 @@ import victor.training.spring.flux.hibernate.Comment;
 import victor.training.spring.flux.hibernate.CommentRepo;
 import victor.training.spring.flux.hibernate.Post;
 import victor.training.spring.flux.hibernate.PostRepo;
+import victor.training.spring.flux.jooq.Tables;
+import victor.training.spring.flux.jooq.tables.records.PostRecord;
 import victor.training.spring.flux.mongo.Author;
 import victor.training.spring.flux.mongo.AuthorRepo;
 import victor.training.spring.flux.rabbit.RabbitSender;
@@ -39,6 +42,8 @@ public class FluxApi {
   private final RabbitSender rabbitSender;
   private final AuthorRepo authorRepo;
   private final WebClient webClient;
+  private final DSLContext jooq;
+
 
   @PostConstruct
   public void initialDataInMongo() {
@@ -51,13 +56,17 @@ public class FluxApi {
     GetPostsResponse(Post post) {
       this(post.getId(), post.getTitle());
     }
+    GetPostsResponse(PostRecord post) {
+      this(post.getId(), post.getTitle());
+    }
   }
 
   @GetMapping("posts")
   public Flux<GetPostsResponse> posts() {
-    return Mono.fromCallable(postRepo::findAll)
-        .subscribeOn(boundedElastic())
-        .flatMapMany(Flux::fromIterable)
+//    return Mono.fromCallable(postRepo::findAll)
+//        .subscribeOn(boundedElastic())
+//        .flatMapMany(Flux::fromIterable)
+    return Flux.from(jooq.selectFrom(Tables.POST))
         .map(GetPostsResponse::new);
   }
 
