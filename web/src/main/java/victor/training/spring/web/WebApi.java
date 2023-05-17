@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import victor.training.spring.web.WebApi.GetPostByIdResponse.CommentResponse;
 import victor.training.spring.web.hibernate.Comment;
 import victor.training.spring.web.hibernate.CommentRepo;
 import victor.training.spring.web.hibernate.Post;
@@ -21,6 +23,7 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.time.LocalDateTime.now;
 
@@ -47,16 +50,16 @@ public class WebApi {
     return postRepo.findAll().stream().map(post -> new GetPostsResponse(post.getId(), post.getTitle())).toList();
   }
 
-  public record GetPostByIdResponse(Long id, String title, String body, List<GetPostByIdResponseComment> comments) {
-  }
-  public record GetPostByIdResponseComment(String comment, String name) {
+  public record GetPostByIdResponse(Long id, String title, String body, List<CommentResponse> comments) {
+    public record CommentResponse(String comment, String name) {
+    }
   }
 
   @GetMapping("posts/{postId}")
   public GetPostByIdResponse getById(@PathVariable Long postId) {
     Post post = postRepo.findById(postId).orElseThrow();
-    List<GetPostByIdResponseComment> comments = commentRepo.findByPostId(postId).stream()
-        .map(c -> new GetPostByIdResponseComment(c.getComment(), c.getName()))
+    List<CommentResponse> comments = commentRepo.findByPostId(postId).stream()
+        .map(c -> new CommentResponse(c.getComment(), c.getName()))
         .toList();
     return new GetPostByIdResponse(post.getId(), post.getTitle(), post.getBody(), comments);
   }
@@ -104,6 +107,7 @@ public class WebApi {
     boolean authorAllows = checkAuthorAllowsComments(post.getAuthorId());
     if (safe && authorAllows) {
       String name = principal != null ? principal.getName() : "anonymous";
+//      String name = SecurityContextHolder.getContext().getAuthentication().getName();
       commentRepo.save(new Comment().setName(name).setComment(request.comment).setPost(post));
     } else {
       throw new IllegalArgumentException("Comment Rejected");
@@ -115,7 +119,8 @@ public class WebApi {
   }
 
   private boolean checkOffensive(String body, String comment) {
-    record SafetyCheckRequest(String body, String comment){}
+    record SafetyCheckRequest(String body, String comment) {
+    }
     String result = restTemplate.postForObject("http://localhost:9999/safety-check", new SafetyCheckRequest(body, comment), String.class);
     return "OK".equals(result);
   }
