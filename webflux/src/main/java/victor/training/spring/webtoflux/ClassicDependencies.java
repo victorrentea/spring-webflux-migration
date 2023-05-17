@@ -14,8 +14,8 @@ public class ClassicDependencies {
 
   public void rabbitSend(String message) {
 //    String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-    String currentUsername = "jdoe"; // from current thread
-    log.info("🐇 send message: {} by {}", message, currentUsername);
+    String currentUsername = "jdoe"; // from current thread in Spring Web
+    log.info("Pretend send message on 🐇: {} by {}", message, currentUsername);
   }
 
   public ReaderProfile fetchUserProfile(Long readerId) {

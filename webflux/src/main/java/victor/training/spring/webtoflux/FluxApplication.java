@@ -25,9 +25,9 @@ import static victor.training.spring.webtoflux.table.tables.AuthorBook.AUTHOR_BO
 @SuppressWarnings("ALL")
 @SpringBootApplication
 @RestController
-public class WebFluxMigrationApplication {
+public class FluxApplication {
   public static void main(String[] args) {
-    SpringApplication.run(WebFluxMigrationApplication.class, args);
+    SpringApplication.run(FluxApplication.class, args);
   }
 
   @Autowired
@@ -105,7 +105,6 @@ public class WebFluxMigrationApplication {
     String bio;
   }
 
-
   @GetMapping("authors")
   public List<AuthorDto> authors() {
     List<AuthorDto> results = new ArrayList<>();
@@ -119,10 +118,11 @@ public class WebFluxMigrationApplication {
     return results;
   }
 
+  @Autowired
+  private RestTemplate restTemplate;
 
-  @SneakyThrows
   private String fetchBio(Integer authorId) {
-    return new RestTemplate().getForObject("http://localhost:8082/api/teachers/" + authorId + "/bio", String.class);
+    return restTemplate.getForObject("http://localhost:8082/api/teachers/" + authorId + "/bio", String.class);
   }
 
   @GetMapping("reader/{readerId}/check")
@@ -136,5 +136,4 @@ public class WebFluxMigrationApplication {
   // TODO propagate Reactive Security Context
   // TODO reactive kafka receiver / sender
   // TODO reactive mongo
-
 }

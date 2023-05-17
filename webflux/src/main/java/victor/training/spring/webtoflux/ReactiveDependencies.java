@@ -17,7 +17,7 @@ public class ReactiveDependencies {
 
   public Mono<Void> rabbitSend(String message) {
     return ReactiveSecurityContextHolder.getContext()
-            .doOnNext(securityContext -> log.info("🐇 send message: {} as {}", message, securityContext.getAuthentication().getName()))
+            .doOnNext(securityContext -> log.info("Pretend send message on 🐇: {} as {}", message, securityContext.getAuthentication().getName()))
             .then();
   }
 
