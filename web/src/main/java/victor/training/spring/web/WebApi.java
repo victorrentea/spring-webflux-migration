@@ -18,6 +18,7 @@ import victor.training.spring.web.rabbit.RabbitSender;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class WebApi {
   private final RestTemplate restTemplate;
 
   @PostConstruct
-  public void insertInMongo() {
+  public void initialDataInMongo() {
     authorBioRepo.save(new AuthorBio().setId(1000L).setName("John DOE").setBio("Long description"));
   }
 
@@ -46,13 +47,18 @@ public class WebApi {
     return postRepo.findAll().stream().map(post -> new GetPostsResponse(post.getId(), post.getTitle())).toList();
   }
 
-  public record GetPostByIdResponse(Long id, String title, String body) {
+  public record GetPostByIdResponse(Long id, String title, String body, List<GetPostByIdResponseComment> comments) {
+  }
+  public record GetPostByIdResponseComment(String comment, String name) {
   }
 
-  @GetMapping("posts/{id}")
-  public GetPostByIdResponse getById(@PathVariable Long id) {
-    Post post = postRepo.findById(id).orElseThrow();
-    return new GetPostByIdResponse(post.getId(), post.getTitle(), post.getBody());
+  @GetMapping("posts/{postId}")
+  public GetPostByIdResponse getById(@PathVariable Long postId) {
+    Post post = postRepo.findById(postId).orElseThrow();
+    List<GetPostByIdResponseComment> comments = commentRepo.findByPostId(postId).stream()
+        .map(c -> new GetPostByIdResponseComment(c.getComment(), c.getName()))
+        .toList();
+    return new GetPostByIdResponse(post.getId(), post.getTitle(), post.getBody(), comments);
   }
 
   public record CreatePostRequest(String title, String body, Long authorId) {
@@ -88,16 +94,17 @@ public class WebApi {
     return restTemplate.getForObject("http://localhost:9999/contact/" + authorId + "/email", String.class);
   }
 
-  record CreateCommentRequest(String comment, String name) {
+  record CreateCommentRequest(String comment) {
   }
 
   @PostMapping("post/{postId}/comments")
-  public void createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request) {
+  public void createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request, Principal principal) {
     Post post = postRepo.findById(postId).orElseThrow();
     boolean safe = checkOffensive(post.getBody(), request.comment);
     boolean authorAllows = checkAuthorAllowsComments(post.getAuthorId());
     if (safe && authorAllows) {
-      commentRepo.save(new Comment().setName(request.name).setComment(request.comment).setPost(post));
+      String name = principal != null ? principal.getName() : "anonymous";
+      commentRepo.save(new Comment().setName(name).setComment(request.comment).setPost(post));
     } else {
       throw new IllegalArgumentException("Comment Rejected");
     }

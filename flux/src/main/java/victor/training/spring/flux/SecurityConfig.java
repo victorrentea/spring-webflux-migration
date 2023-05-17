@@ -10,7 +10,6 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 @EnableWebFluxSecurity
 public class SecurityConfig  {
-    // The NEW Spring Security config style
     @Bean
     SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http) {
         return http.csrf().disable()
@@ -19,14 +18,4 @@ public class SecurityConfig  {
                 .and().build();
     }
 
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
-
-    // Equivalent in OLD style
-//  @Override
-//  protected void configure(HttpSecurity http) throws Exception {
-//    http.csrf().disable().authorizeRequests().anyRequest().permitAll();
-//  }
 }
