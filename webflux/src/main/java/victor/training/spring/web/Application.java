@@ -1,6 +1,5 @@
-package victor.training.spring.webtoflux;
+package victor.training.spring.web;
 
-import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
@@ -11,23 +10,23 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import victor.training.spring.webtoflux.table.tables.Book;
+import victor.training.spring.web.jooq.tables.Book;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static victor.training.spring.webtoflux.table.Tables.AUTHOR;
-import static victor.training.spring.webtoflux.table.Tables.BOOK;
-import static victor.training.spring.webtoflux.table.tables.AuthorBook.AUTHOR_BOOK;
+import static victor.training.spring.web.jooq.Tables.AUTHOR;
+import static victor.training.spring.web.jooq.Tables.BOOK;
+import static victor.training.spring.web.jooq.tables.AuthorBook.AUTHOR_BOOK;
 
 @Slf4j
 @SuppressWarnings("ALL")
 @SpringBootApplication
 @RestController
-public class FluxApplication {
+public class Application {
   public static void main(String[] args) {
-    SpringApplication.run(FluxApplication.class, args);
+    SpringApplication.run(Application.class, args);
   }
 
   @Autowired

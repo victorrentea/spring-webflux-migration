@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres
+    hostname: postgres
+    environment:
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"
+
+  mongo:
+    image: mongo
+    hostname: mongo
+    ports:
+      - "27017:27017"
+
+  rabbit:
+    image: rabbitmq:3-management #has the management plugin preinstalled
+    ports:
+      - "5672:5672" #main port
+      - "15672:15672" #admin port see http://localhost:15672/#/
+
+  wiremock:
+    image: wiremock/wiremock
+    volumes:
+      - .:/home/wiremock
+    ports:
+      - "9999:8080"

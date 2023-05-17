@@ -1,0 +1,14 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/author/.*/comments"
+  },
+  "response": {
+    "status": 200,
+    "body" : "true",
+    "headers": {
+      "Content-Type": "text/plain"
+    },
+    "fixedDelayMilliseconds": 1
+  }
+}

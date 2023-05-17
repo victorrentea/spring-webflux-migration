@@ -1,11 +1,16 @@
 spring:
   datasource:
-    url: jdbc:h2:tcp://localhost:9092/~/test
-    driver-class-name: org.h2.Driver
-#    url: jdbc:p6spy:h2:tcp://localhost:9092/~/test
-#    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    username: sa
-    password: sa
+    url: jdbc:postgresql://localhost:5432/postgres
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: secret
   sql:
     init:
       mode: always
+  jpa:
+    hibernate:
+      ddl-auto: create
+  security:
+    user:
+      name: user
+      password: user

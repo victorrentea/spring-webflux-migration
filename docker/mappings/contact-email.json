@@ -1,0 +1,14 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/contact/.*/email"
+  },
+  "response": {
+    "status": 200,
+    "body" : "jdoe@example.com",
+    "headers": {
+      "Content-Type": "text/plain"
+    },
+    "fixedDelayMilliseconds": 1
+  }
+}

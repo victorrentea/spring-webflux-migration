@@ -1,0 +1,15 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "url": "/author/1001/comments"
+  },
+  "response": {
+    "status": 200,
+    "body" : "false",
+    "headers": {
+      "Content-Type": "text/plain"
+    },
+    "fixedDelayMilliseconds": 1
+  }
+}

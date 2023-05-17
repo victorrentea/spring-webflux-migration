@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/safety-check"
+  },
+  "response": {
+    "status": 200,
+    "body" : "OK",
+    "headers": {
+      "Content-Type": "text/plain"
+    },
+    "fixedDelayMilliseconds": 1
+
+  }
+}
