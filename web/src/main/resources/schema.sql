@@ -1,40 +1,31 @@
-DROP TABLE IF EXISTS author_book, author, book;
+drop table public.comment;
+drop table public.post;
 
-CREATE TABLE author
+create table public.post
 (
-    id         INT         NOT NULL PRIMARY KEY,
-    first_name VARCHAR(50),
-    last_name  VARCHAR(50) NOT NULL
+    id        bigint not null
+        primary key,
+    author_id bigint,
+    body      varchar(255),
+    title     varchar(255)
 );
 
-CREATE TABLE book
+alter table public.post
+    owner to postgres;
+
+create table public.comment
 (
-    id    INT          NOT NULL PRIMARY KEY,
-    title VARCHAR(100) NOT NULL
+    id      bigint not null
+        primary key,
+    comment varchar(255),
+    name    varchar(255),
+    post_id bigint
+        constraint FK_COMMENT_POST
+            references public.post
 );
 
-CREATE TABLE author_book
-(
-    author_id INT NOT NULL,
-    book_id   INT NOT NULL,
+alter table public.comment
+    owner to postgres;
 
-    PRIMARY KEY (author_id, book_id),
-    CONSTRAINT fk_ab_author FOREIGN KEY (author_id) REFERENCES author (id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_ab_book FOREIGN KEY (book_id) REFERENCES book (id)
-);
-
-INSERT INTO author
-VALUES (1, 'Kathy', 'Sierra'),
-       (2, 'Bert', 'Bates'),
-       (3, 'Bryan', 'Basham');
-
-INSERT INTO book
-VALUES (1, 'Head First Java'),
-       (2, 'Head First Servlets and JSP'),
-       (3, 'OCA/OCP Java SE 7 Programmer');
-
-INSERT INTO author_book
-VALUES (1, 1),
-       (1, 3),
-       (2, 1);
+INSERT INTO public.post (id, author_id, body, title) VALUES (1, 1000, 'European Software Crafters', 'Hello world!');
+INSERT INTO public.post (id, author_id, body, title) VALUES (2, 1001, 'No Comments', 'Locked Post');

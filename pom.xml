@@ -73,39 +73,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    <build>
-        <plugins>
-            <!-- Used to regenerate Java classes after tables are updated -->
-            <plugin>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq-codegen-maven</artifactId>
-                <version>3.16.0</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <jdbc>
-                                <url>jdbc:postgresql://localhost:5432/postgres</url>
-                                <driver>org.postgresql.Driver</driver>
-                                <user>postgres</user>
-                                <password>secret</password>
-                            </jdbc>
-                            <generator>
-                                <database>
-                                    <inputSchema>public</inputSchema>
-                                </database>
-                                <target>
-                                    <packageName>victor.training.spring.flux.jooq</packageName>
-                                </target>
-                            </generator>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+
 
 </project>

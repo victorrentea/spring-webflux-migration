@@ -34,10 +34,8 @@ public class WebApi {
   private final RestTemplate restTemplate;
 
   @PostConstruct
-  public void initialData() {
-    postRepo.save(new Post().setTitle("Hello world!").setAuthorId(1000L).setBody("European Software Crafters"));
+  public void insertInMongo() {
     authorBioRepo.save(new AuthorBio().setId(1000L).setName("John DOE").setBio("Long description"));
-    postRepo.save(new Post().setTitle("Locked Post").setAuthorId(1001L).setBody("No Comments"));
   }
 
   public record GetPostsResponse(Long id, String title) {
