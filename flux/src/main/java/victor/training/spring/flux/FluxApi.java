@@ -52,6 +52,27 @@ public class FluxApi {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+  public record GetAuthorsResponse(Long id, String name, String email, String bio) {
+    GetAuthorsResponse(Author author, String email) {
+      this(author.getId(), author.getName(), email, author.getBio());
+    }
+  }
+
+  @GetMapping("authors")
+  public Flux<GetAuthorsResponse> getAuthors() {
+    return authorRepo.findAll()
+        .flatMap(a -> fetchEmail(a.getId()).map(e -> new GetAuthorsResponse(a, e)));
+  }
+
+  private Mono<String> fetchEmail(Long authorId) {
+    return webClient.get()
+        .uri("http://localhost:9999/contact/" + authorId + "/email")
+        .retrieve().bodyToMono(String.class);
+  }
+
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
   public record GetPostsResponse(Long id, String title) {
     GetPostsResponse(Post post) {
       this(post.getId(), post.getTitle());
@@ -123,31 +144,11 @@ public class FluxApi {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  public record GetAuthorsResponse(Long id, String name, String email, String bio) {
-    GetAuthorsResponse(Author author, String email) {
-      this(author.getId(), author.getName(), email, author.getBio());
-    }
-  }
-
-  @GetMapping("authors")
-  public Flux<GetAuthorsResponse> getAuthors() {
-    return authorRepo.findAll()
-        .flatMap(a -> fetchEmail(a.getId()).map(e -> new GetAuthorsResponse(a, e)));
-  }
-
-  private Mono<String> fetchEmail(Long authorId) {
-    return webClient.get()
-        .uri("http://localhost:9999/contact/" + authorId + "/email")
-        .retrieve().bodyToMono(String.class);
-  }
-
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
   record CreateCommentRequest(String comment) {
   }
 
   @PreAuthorize("isAuthenticated()")
-  @PostMapping("post/{postId}/comments")
+  @PostMapping("posts/{postId}/comments")
   public Mono<Void> createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request, Principal principal) {
     return Mono.fromCallable(() -> postRepo.findById(postId).orElseThrow())
         .subscribeOn(boundedElastic())

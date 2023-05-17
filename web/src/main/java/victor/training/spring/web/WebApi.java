@@ -42,6 +42,26 @@ public class WebApi {
   }
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  public record GetAuthorsResponse(Long id, String name, String email, String bio) {
+    GetAuthorsResponse(Author author, String email) {
+      this(author.getId(), author.getName(),email, author.getBio());
+    }
+  }
+  @GetMapping("authors")
+  public List<GetAuthorsResponse> getAllAuthors() {
+    List<GetAuthorsResponse> list = new ArrayList<>();
+    for (Author author : authorRepo.findAll()) {
+      String email = fetchEmail(author.getId());
+      list.add(new GetAuthorsResponse(author, email));
+    }
+    return list;
+  }
+
+  private String fetchEmail(Long authorId) {
+    return restTemplate.getForObject("http://localhost:9999/contact/" + authorId + "/email", String.class);
+  }
+
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   public record GetPostsResponse(Long id, String title) {
     GetPostsResponse(Post post) {
       this(post.getId(), post.getTitle());
@@ -90,30 +110,10 @@ public class WebApi {
   }
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  public record GetAuthorsResponse(Long id, String name, String email, String bio) {
-    GetAuthorsResponse(Author author, String email) {
-      this(author.getId(), author.getName(),email, author.getBio());
-    }
-  }
-  @GetMapping("authors")
-  public List<GetAuthorsResponse> getAllAuthors() {
-    List<GetAuthorsResponse> list = new ArrayList<>();
-    for (Author author : authorRepo.findAll()) {
-      String email = fetchEmail(author.getId());
-      list.add(new GetAuthorsResponse(author, email));
-    }
-    return list;
-  }
-
-  private String fetchEmail(Long authorId) {
-    return restTemplate.getForObject("http://localhost:9999/contact/" + authorId + "/email", String.class);
-  }
-
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  record CreateCommentRequest(String comment) {
+  public record CreateCommentRequest(String comment) {
   }
   @PreAuthorize("isAuthenticated()")
-  @PostMapping("post/{postId}/comments")
+  @PostMapping("posts/{postId}/comments")
   public void createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request) {
     Post post = postRepo.findById(postId).orElseThrow();
     boolean safe = checkOffensive(post.getBody(), request.comment);
