@@ -33,7 +33,7 @@
         </dependency>
 
         <!-- jooq: Reactive SQL Java DSL -->
-        <!--<dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jooq</artifactId>
         </dependency>
@@ -41,7 +41,7 @@
             <groupId>org.jooq</groupId>
             <artifactId>jooq</artifactId>
             <version>3.16.0</version>
-        </dependency>-->
+        </dependency>
 
         <dependency>
             <groupId>org.springdoc</groupId>
