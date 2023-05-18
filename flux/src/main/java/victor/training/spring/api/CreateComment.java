@@ -16,6 +16,8 @@ import victor.training.spring.hibernate.CommentRepo;
 import victor.training.spring.hibernate.Post;
 import victor.training.spring.hibernate.PostRepo;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -35,27 +37,11 @@ public class CreateComment { // #5
                 checkOffensive(p.getBody(), request.comment),
                 checkAuthorAllowsComments(p.getAuthorId()),
                 Boolean::logicalAnd)
-            .flatMap(b -> {
-              if (!b) {
-                return Mono.error(new IllegalArgumentException("Comment Rejected"));
-              } else {
-                return Mono.just(b);
-              }
-            })
+            .flatMap(CreateComment::checkCommentApproved)
             .flatMap(b -> createComment(request.comment, p.getId()))
-            .flatMap(this::saveComment));
-  }
-
-
-  private Mono<Void> saveComment(Comment comment) {
-    return Mono.fromCallable(() -> commentRepo.save(comment))
-        .subscribeOn(Schedulers.boundedElastic())
+            .flatMap(this::saveComment))
+        .doOnNext(comment -> log.info("Saved this: " + comment))
         .then();
-  }
-
-  private Mono<Post> findPost(Long postId) {
-    return Mono.fromCallable(() -> postRepo.findById(postId).orElseThrow()).subscribeOn(Schedulers.boundedElastic())
-        .doOnSubscribe(s -> log.info("DB Query"));
   }
 
   private static Mono<Comment> createComment(String comment, Long postId) {
@@ -65,6 +51,25 @@ public class CreateComment { // #5
             .setName(u)
             .setComment(comment)
             .setPostId(postId));
+  }
+
+  private static Mono<Boolean> checkCommentApproved(Boolean b) {
+    if (!b) {
+      return Mono.error(new IllegalArgumentException("Comment Rejected"));
+    } else {
+      return Mono.just(b);
+    }
+  }
+
+
+  private Mono<Comment> saveComment(Comment comment) {
+    return Mono.fromCallable(() -> commentRepo.save(comment))
+        .subscribeOn(Schedulers.boundedElastic());
+  }
+
+  private Mono<Post> findPost(Long postId) {
+    return Mono.fromCallable(() -> postRepo.findById(postId).orElseThrow()).subscribeOn(Schedulers.boundedElastic())
+        .doOnSubscribe(s -> log.info("DB Query"));
   }
 
   private Mono<Boolean> checkAuthorAllowsComments(Long authorId) {
