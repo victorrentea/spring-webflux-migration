@@ -9,7 +9,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 import victor.training.spring.hibernate.Post;
 import victor.training.spring.hibernate.PostRepo;
-import victor.training.spring.jooq.Tables;
 
 @Slf4j
 @RestController
