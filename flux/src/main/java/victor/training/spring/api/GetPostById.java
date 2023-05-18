@@ -5,15 +5,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import victor.training.spring.api.GetPostById.GetPostByIdResponse.CommentResponse;
 import victor.training.spring.hibernate.Comment;
 import victor.training.spring.hibernate.CommentRepo;
 import victor.training.spring.hibernate.Post;
 import victor.training.spring.hibernate.PostRepo;
-import victor.training.spring.rabbit.RabbitSender;
 
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @RestController
@@ -26,19 +28,29 @@ public class GetPostById { // #3
     GetPostByIdResponse(Post post, List<CommentResponse> comments) {
       this(post.getId(), post.getTitle(), post.getBody(), comments);
     }
+
     public record CommentResponse(String comment, String name) {
       CommentResponse(Comment comment) {
         this(comment.getComment(), comment.getName());
       }
     }
   }
+
   @GetMapping("posts/{postId}")
-  public GetPostByIdResponse getPostById(@PathVariable Long postId) {
-    Post post = postRepo.findById(postId).orElseThrow();
-    List<CommentResponse> comments = commentRepo.findByPostId(postId).stream()
-        .map(CommentResponse::new)
-        .toList();
-    return new GetPostByIdResponse(post, comments);
+  public Mono<GetPostByIdResponse> getPostById(@PathVariable Long postId) {
+    return findPost(postId).zipWith(findComments(postId), GetPostByIdResponse::new);
+  }
+
+  private Mono<List<CommentResponse>> findComments(Long postId) {
+    return Mono.fromCallable(() -> commentRepo.findByPostId(postId).stream()
+            .map(CommentResponse::new).collect(toList()))
+        .subscribeOn(Schedulers.boundedElastic())
+       ;
+  }
+
+  private Mono<Post> findPost(Long postId) {
+    return Mono.fromCallable(() -> postRepo.findById(postId).orElseThrow())
+        .subscribeOn(Schedulers.boundedElastic());
   }
 
 }
