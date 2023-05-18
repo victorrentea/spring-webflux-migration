@@ -1,17 +1,25 @@
 package victor.training.spring;
 
-import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
-import victor.training.spring.WebApi.*;
+import victor.training.spring.api.CreateComment.CreateCommentRequest;
+import victor.training.spring.api.GetAllAuthors.GetAuthorsResponse;
+import victor.training.spring.api.GetAllPosts.GetPostsResponse;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
+import static victor.training.spring.api.CreatePost.CreatePostRequest;
+import static victor.training.spring.api.GetPostById.GetPostByIdResponse;
 
 @SuppressWarnings("DataFlowIssue")
 @TestInstance(PER_CLASS)
