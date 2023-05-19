@@ -6,11 +6,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import victor.training.spring.hibernate.Comment;
-import victor.training.spring.hibernate.CommentRepo;
-import victor.training.spring.hibernate.Post;
-import victor.training.spring.hibernate.PostRepo;
+import victor.training.spring.sql.Comment;
+import victor.training.spring.sql.CommentRepo;
+import victor.training.spring.sql.Post;
+import victor.training.spring.sql.PostRepo;
 import victor.training.spring.rabbit.RabbitSender;
+
+import java.util.UUID;
 
 import static java.time.LocalDateTime.now;
 
@@ -25,23 +27,24 @@ public class CreatePost { // #4
   public record CreatePostRequest(String title, String body, Long authorId) {
     Post toPost() {
       return new Post()
-          .setTitle(title)
-          .setBody(body)
-          .setAuthorId(authorId);
+          .setId(UUID.randomUUID().toString())
+          .setTitle(title).setBody(body).setAuthorId(authorId);
     }
   }
   @PostMapping("posts")
   @Transactional
   public void createPost(@RequestBody CreatePostRequest request) {
     Post post = postRepo.save(request.toPost());
-    commentRepo.save(new Comment().setPostId(post.getId()).setComment("Posted on " + now()));
+    commentRepo.save(new Comment()
+        .setId(UUID.randomUUID().toString())
+        .setPostId(post.getId())
+        .setComment("Posted on " + now()));
 
-    // TODO delete comment
     // TODO move to reactiveCrudRepository
+    // TODO delete comment
     // TODO delete jooq
     // TODO listen to rabbit from tests
     // TODO add rabbit listened in prod
-    // TODO add warning after tests: THIS IS NOT THE LOG -> see the app log + silence the log of tests
     // TODO
     rabbitSender.sendMessage("Post created: " + post.getId());
   }

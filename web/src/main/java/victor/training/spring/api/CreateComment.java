@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import victor.training.spring.hibernate.Comment;
-import victor.training.spring.hibernate.CommentRepo;
-import victor.training.spring.hibernate.Post;
-import victor.training.spring.hibernate.PostRepo;
+import victor.training.spring.sql.Comment;
+import victor.training.spring.sql.CommentRepo;
+import victor.training.spring.sql.Post;
+import victor.training.spring.sql.PostRepo;
+
+import static java.util.UUID.randomUUID;
 
 @Slf4j
 @RestController
@@ -37,9 +39,10 @@ public class CreateComment { // #5
     }
   }
 
-  private static Comment createComment(String comment, Long postId) {
+  private static Comment createComment(String comment, String postId) {
     String loggedInUser = SecurityContextHolder.getContext().getAuthentication().getName();
     return new Comment()
+        .setId(randomUUID().toString())
         .setName(loggedInUser)
         .setComment(comment)
         .setPostId(postId);

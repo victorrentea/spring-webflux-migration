@@ -1,10 +1,7 @@
 package victor.training.spring;
 
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,7 +28,6 @@ public class UserJourneyTest {
   private int initialPostsCounts;
   private final String createdPostTitle = "Title" + UUID.randomUUID();
 
-
   @Test
   @Order(1)
   void get_authors() {
@@ -46,8 +42,8 @@ public class UserJourneyTest {
     GetPostsResponse[] posts = rest.getForObject(BASE_URL + "posts", GetPostsResponse[].class);
     initialPostsCounts = posts.length;
     assertThat(posts)
-        .contains(new GetPostsResponse(1L, "Hello world!"))
-        .contains(new GetPostsResponse(2L, "Locked Post"));
+        .contains(new GetPostsResponse("1", "Hello world!"))
+        .contains(new GetPostsResponse("2", "Locked Post"));
   }
 
   @Test
@@ -66,6 +62,7 @@ public class UserJourneyTest {
         .contains(createdPostTitle);
 
   }
+
   @Test
   @Order(20)
   void get_post_by_id() {
@@ -97,5 +94,12 @@ public class UserJourneyTest {
 
     assertThatThrownBy(() -> rest.exchange(BASE_URL + "posts/2/comments", HttpMethod.POST, requestEntity, Void.class))
         .hasMessageContaining("Comment Rejected");
+  }
+
+  @AfterAll
+  public void method() {
+    System.err.println("*********************************************************");
+    System.err.println("** Please check the output of the deployed application **");
+    System.err.println("*********************************************************");
   }
 }

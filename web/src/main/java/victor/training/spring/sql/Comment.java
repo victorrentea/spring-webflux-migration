@@ -1,11 +1,9 @@
-package victor.training.spring.hibernate;
+package victor.training.spring.sql;
 
 import lombok.Data;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import java.time.LocalDateTime;
 
 import static java.time.LocalDateTime.now;
@@ -14,9 +12,8 @@ import static java.time.LocalDateTime.now;
 @Entity
 public class Comment {
   @Id
-  @GeneratedValue
-  private Long id;
-  private Long postId;
+  private String id;
+  private String postId;
 
   private String comment;
   private String name;

@@ -10,13 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import victor.training.spring.hibernate.Comment;
-import victor.training.spring.hibernate.CommentRepo;
-import victor.training.spring.hibernate.Post;
-import victor.training.spring.hibernate.PostRepo;
+import victor.training.spring.sql.Comment;
+import victor.training.spring.sql.CommentRepo;
+import victor.training.spring.sql.Post;
+import victor.training.spring.sql.PostRepo;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -44,10 +43,11 @@ public class CreateComment { // #5
         .then();
   }
 
-  private static Mono<Comment> createComment(String comment, Long postId) {
+  private static Mono<Comment> createComment(String comment, String postId) {
     return ReactiveSecurityContextHolder.getContext()
         .map(c -> c.getAuthentication().getName())
         .map(u -> new Comment()
+            .setId(UUID.randomUUID().toString())
             .setName(u)
             .setComment(comment)
             .setPostId(postId));
@@ -63,12 +63,11 @@ public class CreateComment { // #5
 
 
   private Mono<Comment> saveComment(Comment comment) {
-    return Mono.fromCallable(() -> commentRepo.save(comment))
-        .subscribeOn(Schedulers.boundedElastic());
+    return commentRepo.save(comment);
   }
 
   private Mono<Post> findPost(Long postId) {
-    return Mono.fromCallable(() -> postRepo.findById(postId).orElseThrow()).subscribeOn(Schedulers.boundedElastic())
+    return postRepo.findById(postId)
         .doOnSubscribe(s -> log.info("DB Query"));
   }
 

@@ -5,13 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 import victor.training.spring.api.GetPostById.GetPostByIdResponse.CommentResponse;
-import victor.training.spring.hibernate.Comment;
-import victor.training.spring.hibernate.CommentRepo;
-import victor.training.spring.hibernate.Post;
-import victor.training.spring.hibernate.PostRepo;
-import victor.training.spring.rabbit.RabbitSender;
+import victor.training.spring.sql.Comment;
+import victor.training.spring.sql.CommentRepo;
+import victor.training.spring.sql.Post;
+import victor.training.spring.sql.PostRepo;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ public class GetPostById { // #3
   private final PostRepo postRepo;
   private final CommentRepo commentRepo;
 
-  public record GetPostByIdResponse(Long id, String title, String body, List<CommentResponse> comments) {
+  public record GetPostByIdResponse(String id, String title, String body, List<CommentResponse> comments) {
     GetPostByIdResponse(Post post, List<CommentResponse> comments) {
       this(post.getId(), post.getTitle(), post.getBody(), comments);
     }

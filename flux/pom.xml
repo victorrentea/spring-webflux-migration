@@ -16,6 +16,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
+
+        <!-- reactive SQL -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>r2dbc-postgresql</artifactId>
+        </dependency>
+
+        <!-- reactive mongo -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
@@ -32,57 +44,10 @@
             <artifactId>spring-cloud-stream-binder-rabbit</artifactId>
         </dependency>
 
-        <!-- jooq: Reactive SQL Java DSL -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jooq</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jooq</groupId>
-            <artifactId>jooq</artifactId>
-            <version>3.16.0</version>
-        </dependency>
-
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-webflux-ui</artifactId>
             <version>1.6.15</version>
         </dependency>
     </dependencies>
-    <build>
-        <plugins>
-            <!-- Used to regenerate jooq Java classes based on the tables in the DB -->
-<!--
-            <plugin>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq-codegen-maven</artifactId>
-                <version>3.16.0</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <jdbc>
-                                <url>jdbc:postgresql://localhost:5432/postgres</url>
-                                <driver>org.postgresql.Driver</driver>
-                                <user>postgres</user>
-                                <password>secret</password>
-                            </jdbc>
-                            <generator>
-                                <database>
-                                    <inputSchema>public</inputSchema>
-                                </database>
-                                <target>
-                                    <packageName>victor.training.spring.flux.jooq</packageName>
-                                </target>
-                            </generator>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
--->
-        </plugins>
-    </build>
 </project>

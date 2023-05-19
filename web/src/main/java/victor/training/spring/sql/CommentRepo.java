@@ -1,4 +1,4 @@
-package victor.training.spring.hibernate;
+package victor.training.spring.sql;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class GetAllAuthors { // #1
-  private final AuthorRepo authorRepo;
+  private final AuthorRepo authorRepo; // MongoDB
   private final RestTemplate restTemplate;
 
   @PostConstruct

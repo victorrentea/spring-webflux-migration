@@ -1,20 +1,18 @@
-package victor.training.spring.hibernate;
+package victor.training.spring.sql;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.time.LocalDateTime.now;
 
-@Entity
 @Data // i'm sorry
+@Table
 public class Post {
   @Id
-  @GeneratedValue
-  private Long id;
+  private String id;
 
   private String title;
   private String body;

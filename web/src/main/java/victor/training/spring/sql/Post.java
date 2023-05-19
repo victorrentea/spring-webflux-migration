@@ -1,10 +1,8 @@
-package victor.training.spring.hibernate;
+package victor.training.spring.sql;
 
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 import static java.time.LocalDateTime.now;
@@ -13,8 +11,7 @@ import static java.time.LocalDateTime.now;
 @Data // i'm sorry
 public class Post {
   @Id
-  @GeneratedValue
-  private Long id;
+  private String id;
 
   private String title;
   private String body;

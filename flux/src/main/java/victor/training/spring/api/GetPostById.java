@@ -6,12 +6,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import victor.training.spring.api.GetPostById.GetPostByIdResponse.CommentResponse;
-import victor.training.spring.hibernate.Comment;
-import victor.training.spring.hibernate.CommentRepo;
-import victor.training.spring.hibernate.Post;
-import victor.training.spring.hibernate.PostRepo;
+import victor.training.spring.sql.Comment;
+import victor.training.spring.sql.CommentRepo;
+import victor.training.spring.sql.Post;
+import victor.training.spring.sql.PostRepo;
 
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class GetPostById { // #3
   private final PostRepo postRepo;
   private final CommentRepo commentRepo;
 
-  public record GetPostByIdResponse(Long id, String title, String body, List<CommentResponse> comments) {
+  public record GetPostByIdResponse(String id, String title, String body, List<CommentResponse> comments) {
     GetPostByIdResponse(Post post, List<CommentResponse> comments) {
       this(post.getId(), post.getTitle(), post.getBody(), comments);
     }
@@ -42,15 +41,12 @@ public class GetPostById { // #3
   }
 
   private Mono<List<CommentResponse>> findComments(Long postId) {
-    return Mono.fromCallable(() -> commentRepo.findByPostId(postId).stream()
-            .map(CommentResponse::new).collect(toList()))
-        .subscribeOn(Schedulers.boundedElastic())
-       ;
+    return commentRepo.findByPostId(postId)
+            .map(CommentResponse::new).collect(toList());
   }
 
   private Mono<Post> findPost(Long postId) {
-    return Mono.fromCallable(() -> postRepo.findById(postId).orElseThrow())
-        .subscribeOn(Schedulers.boundedElastic());
+    return postRepo.findById(postId);
   }
 
 }
