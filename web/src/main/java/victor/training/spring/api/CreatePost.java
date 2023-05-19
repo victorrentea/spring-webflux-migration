@@ -35,6 +35,14 @@ public class CreatePost { // #4
   public void createPost(@RequestBody CreatePostRequest request) {
     Post post = postRepo.save(request.toPost());
     commentRepo.save(new Comment().setPostId(post.getId()).setComment("Posted on " + now()));
+
+    // TODO delete comment
+    // TODO move to reactiveCrudRepository
+    // TODO delete jooq
+    // TODO listen to rabbit from tests
+    // TODO add rabbit listened in prod
+    // TODO add warning after tests: THIS IS NOT THE LOG -> see the app log + silence the log of tests
+    // TODO
     rabbitSender.sendMessage("Post created: " + post.getId());
   }
 }
