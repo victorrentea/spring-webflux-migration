@@ -24,7 +24,7 @@ public class GetAllAuthors { // #1
     authorRepo.save(new Author().setId(1000L).setName("John DOE").setBio("Long description"));
   }
 
-  public record GetAuthorsResponse(Long id, String name, String email, String bio) {
+  public record GetAuthorsResponse(Long id, String name, String email, String bio) { // JSON
     GetAuthorsResponse(Author author, String email) {
       this(author.getId(), author.getName(),email, author.getBio());
     }

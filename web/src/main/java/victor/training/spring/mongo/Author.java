@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import static java.time.LocalDateTime.now;
 
 @Document
-@Data // i'm sorry
+@Data
 public class Author {
   @Id
   private Long id;
