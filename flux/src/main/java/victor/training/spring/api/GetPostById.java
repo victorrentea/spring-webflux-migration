@@ -35,7 +35,7 @@ public class GetPostById { // #3
 
   @GetMapping("posts/{postId}")
   public Mono<GetPostByIdResponse> getPostById(@PathVariable String postId) {
-    return Mono.zip(findPost(postId), findComments(postId), GetPostByIdResponse::new);
+    return findPost(postId).zipWith(findComments(postId), GetPostByIdResponse::new);
   }
 
   private Mono<List<CommentResponse>> findComments(String postId) {
