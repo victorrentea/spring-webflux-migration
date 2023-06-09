@@ -1,7 +1,6 @@
 package victor.training.spring.rabbit;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Queue;
 import org.springframework.context.annotation.Bean;
@@ -10,15 +9,12 @@ import reactor.core.publisher.Mono;
 import reactor.rabbitmq.OutboundMessage;
 import reactor.rabbitmq.Sender;
 
-import static java.lang.Thread.sleep;
-
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
 public class RabbitSender {
   private final Sender sender;
 
-  @SneakyThrows
   public Mono<Void> sendMessage(String payload) {
     OutboundMessage outboundMessage = new OutboundMessage("", "rabbitqueue", payload.getBytes());
     return sender.sendWithPublishConfirms(Mono.just(outboundMessage))
