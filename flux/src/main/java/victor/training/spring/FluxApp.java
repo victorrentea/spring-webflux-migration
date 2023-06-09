@@ -1,5 +1,6 @@
 package victor.training.spring;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -26,11 +27,13 @@ public class FluxApp {
     return WebClient.create();
   }
 
+  @Slf4j
   @RestControllerAdvice
   static class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handle(Exception e) {
+      log.error("Error: " + e, e);
       StringWriter sw = new StringWriter();
       e.printStackTrace(new PrintWriter(sw));
       return sw.toString(); // security breach! Don't do this in your project. It's just for easier debugging
