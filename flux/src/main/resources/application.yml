@@ -15,12 +15,16 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+
 
   rabbitmq:
     host: localhost
     port: 5672
     username: guest
     password: guest
-
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
 

@@ -26,6 +26,11 @@ spring:
     username: guest
     password: guest
 
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
 
 #  datasource:
 #    host: localhost
