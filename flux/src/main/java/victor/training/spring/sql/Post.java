@@ -3,12 +3,12 @@ package victor.training.spring.sql;
 import static java.time.LocalDateTime.now;
 
 import java.time.LocalDateTime;
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Data
-@Entity
+@Table
 public class Post {
   @Id
   private String id;

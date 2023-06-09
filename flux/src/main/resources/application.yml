@@ -1,10 +1,11 @@
 
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    driver-class-name: org.postgresql.Driver
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/postgres
     username: postgres
     password: secret
+    pool:
+      enabled: true
   security:
     user:
       name: user

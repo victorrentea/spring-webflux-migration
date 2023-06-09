@@ -1,7 +1,7 @@
 package victor.training.spring.sql;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
-public interface PostRepo extends JpaRepository<Post, String> {
+public interface PostRepo extends ReactiveCrudRepository<Post, String> {
 
 }
