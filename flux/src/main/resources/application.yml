@@ -1,12 +1,10 @@
 
 spring:
-  r2dbc:
-    url: r2dbc:postgresql://localhost:5432/postgres
-#    driver-class-name: org.postgresql.Driver
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    driver-class-name: org.postgresql.Driver
     username: postgres
     password: secret
-    pool:
-      enabled: true
   security:
     user:
       name: user
@@ -26,9 +24,3 @@ spring:
     password: guest
 
 
-datasource:
-  host: localhost
-  port: 5432
-  database: postgres
-  username: postgres
-  password: secret

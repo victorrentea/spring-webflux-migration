@@ -2,7 +2,6 @@ package victor.training.spring;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -11,7 +10,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @Slf4j
 @EnableReactiveMethodSecurity
 @EnableWebFluxSecurity
-@EnableR2dbcRepositories
+//@EnableR2dbcRepositories
 public class SecurityConfig  {
     @Bean
     SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http) {
