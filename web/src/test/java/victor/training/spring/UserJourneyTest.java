@@ -68,7 +68,7 @@ public class UserJourneyTest {
   void get_post_by_id() {
     assertThat(rest.getForObject(BASE_URL + "posts/1", GetPostByIdResponse.class))
         .extracting(GetPostByIdResponse::id, GetPostByIdResponse::title, GetPostByIdResponse::body)
-        .containsExactly(1L, "Hello world!", "European Software Crafters");
+        .containsExactly("1", "Hello world!", "European Software Crafters");
   }
   @Test
   @Order(21)

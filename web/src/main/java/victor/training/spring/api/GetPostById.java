@@ -31,7 +31,7 @@ public class GetPostById { // #3
     }
   }
   @GetMapping("posts/{postId}")
-  public GetPostByIdResponse getPostById(@PathVariable Long postId) {
+  public GetPostByIdResponse getPostById(@PathVariable String postId) {
     Post post = postRepo.findById(postId).orElseThrow();
     List<CommentResponse> comments = commentRepo.findByPostId(postId).stream()
         .map(CommentResponse::new)

@@ -1,0 +1,36 @@
+
+spring:
+#  r2dbc:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+#    url: r2dbc:postgresql://localhost:5432/postgres
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: secret
+#    pool.enabled: true
+  security:
+    user:
+      name: user
+      password: user
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+
+#  datasource:
+#    host: localhost
+#    port: 5432
+#    database: postgres
+#    username: postgres
+#    password: secret
+

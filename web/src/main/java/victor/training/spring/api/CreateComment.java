@@ -28,7 +28,7 @@ public class CreateComment { // #5
   }
   @PreAuthorize("isAuthenticated()")
   @PostMapping("posts/{postId}/comments")
-  public void createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request) {
+  public void createComment(@PathVariable String postId, @RequestBody CreateCommentRequest request) {
     Post post = postRepo.findById(postId).orElseThrow();
     boolean safe = checkOffensive(post.getBody(), request.comment);
     boolean authorAllows = checkAuthorAllowsComments(post.getAuthorId());

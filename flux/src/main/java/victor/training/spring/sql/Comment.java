@@ -1,14 +1,17 @@
 package victor.training.spring.sql;
 
-import lombok.Data;
+import static java.time.LocalDateTime.now;
+
+import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDateTime;
-
-import static java.time.LocalDateTime.now;
-
-@Data // i'm sorry
+@Getter
+@Setter
+@ToString
 @Table
 public class Comment {
   @Id
