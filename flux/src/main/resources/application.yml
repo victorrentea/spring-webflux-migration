@@ -4,8 +4,6 @@ spring:
     url: r2dbc:postgresql://localhost:5432/postgres
     username: postgres
     password: secret
-    pool:
-      enabled: true
   security:
     user:
       name: user
@@ -23,6 +21,7 @@ spring:
     port: 5672
     username: guest
     password: guest
+
 logging:
   level:
     org:

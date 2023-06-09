@@ -1,6 +1,5 @@
 package victor.training.spring.api;
 
-import static java.util.UUID.randomUUID;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,7 @@ public class CreateComment { // #5
   @PreAuthorize("isAuthenticated()")
   @PostMapping("posts/{postId}/comments")
   public Mono<Void> createComment(
-      @PathVariable String postId, @RequestBody CreateCommentRequest request) {
+      @PathVariable Long postId, @RequestBody CreateCommentRequest request) {
 
     return postRepo
         .findById(postId)
@@ -64,13 +63,13 @@ public class CreateComment { // #5
     throw new RuntimeException("Method not implemented");
   }
 
-  private static Mono<Comment> createComment(String comment, String postId) {
+  private static Mono<Comment> createComment(String comment, Long postId) {
     return ReactiveSecurityContextHolder.getContext()
         .map(context -> {
           String loggedInUser = context.getAuthentication().getName();
           return new Comment()
-              .setNew(true)
-              .setId(randomUUID().toString())
+//              .setNew(true)
+//              .setId(randomUUID().toString())
               .setName(loggedInUser)
               .setComment(comment)
               .setPostId(postId);

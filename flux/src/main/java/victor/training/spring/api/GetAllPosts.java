@@ -13,12 +13,11 @@ import victor.training.spring.sql.PostRepo;
 @RequiredArgsConstructor
 public class GetAllPosts { // #2
   static {
-    // add to VM options at startup: -XX:+AllowRedefinitionToAddDeleteMethods
-//    BlockHound.install();
+//    BlockHound.install(); // add to startup VM options: -XX:+AllowRedefinitionToAddDeleteMethods
   }
   private final PostRepo postRepo;
 
-  public record GetPostsResponse(String id, String title) {
+  public record GetPostsResponse(Long id, String title) {
     GetPostsResponse(Post post) {
       this(post.getId(), post.getTitle());
     }
@@ -26,11 +25,9 @@ public class GetAllPosts { // #2
 
   @GetMapping("posts")
   public Flux<GetPostsResponse> getAllPosts() {
-    // findAll agata 1/2xCPU threaduri pe care cheama Netty metodele @RestController
-    // blockhound ar arunca exceptie cand chemi endpointul asta, ca blochezi
-    // "legacy" non-reactive library call care nu tre sa ruleze AICI BLOCAND THREADUL
     log.info("Cine cheama functia efectiva"); // TODO de ce vad parallel- ? treabuia netti9qur2572857-
-    // "legacy" non-reactive library call
+
+    // "legacy" non-reactive library call (JPA)
 //    return Mono.fromCallable(postRepo::findAll)
 //        .subscribeOn(Schedulers.boundedElastic()) // subscribeul in sus unde ruleaza -> e pe alt thread acum
 //        .flatMapMany(Flux::fromIterable)

@@ -1,6 +1,7 @@
 package victor.training.spring.sql;
 
 import static java.time.LocalDateTime.now;
+import static javax.persistence.GenerationType.IDENTITY;
 
 import java.time.LocalDateTime;
 import javax.persistence.*;
@@ -10,7 +11,8 @@ import lombok.Data;
 @Entity
 public class Post {
   @Id
-  private String id;
+  @GeneratedValue(strategy = IDENTITY)
+  private Long id;
   private String title;
   private String body;
   private Long authorId; 

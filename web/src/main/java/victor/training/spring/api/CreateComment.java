@@ -1,6 +1,5 @@
 package victor.training.spring.api;
 
-import static java.util.UUID.randomUUID;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,21 +27,20 @@ public class CreateComment { // #5
   }
   @PreAuthorize("isAuthenticated()")
   @PostMapping("posts/{postId}/comments")
-  public void createComment(@PathVariable String postId, @RequestBody CreateCommentRequest request) {
-    Post post = postRepo.findById(postId).orElseThrow();
-    boolean safe = checkOffensive(post.getBody(), request.comment);
-    boolean authorAllows = checkAuthorAllowsComments(post.getAuthorId());
-    if (safe && authorAllows) {
-      commentRepo.save(createComment(request.comment, post.getId()));
-    } else {
-      throw new IllegalArgumentException("Comment Rejected");
-    }
+  public void createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request) {
+      Post post = postRepo.findById(postId).orElseThrow();
+      boolean safe = checkOffensive(post.getBody(), request.comment);
+      boolean authorAllows = checkAuthorAllowsComments(post.getAuthorId());
+      if (safe && authorAllows) {
+        commentRepo.save(createComment(request.comment, post.getId()));
+      } else {
+        throw new IllegalArgumentException("Comment Rejected");
+      }
   }
 
-  private static Comment createComment(String comment, String postId) {
+  private static Comment createComment(String comment, Long postId) {
     String loggedInUser = SecurityContextHolder.getContext().getAuthentication().getName();
     return new Comment()
-        .setId(randomUUID().toString())
         .setName(loggedInUser)
         .setComment(comment)
         .setPostId(postId);

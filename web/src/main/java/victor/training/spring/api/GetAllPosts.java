@@ -15,7 +15,11 @@ import java.util.List;
 public class GetAllPosts { // #2
   private final PostRepo postRepo;
 
-  public record GetPostsResponse(String id, String title) {
+  static { // detect blocking calls in a reactive app
+//    BlockHound.install(); // add to startup VM options: -XX:+AllowRedefinitionToAddDeleteMethods
+  }
+
+  public record GetPostsResponse(Long id, String title) {
     GetPostsResponse(Post post) {
       this(post.getId(), post.getTitle());
     }

@@ -20,7 +20,7 @@ public class GetPostById { // #3
   private final PostRepo postRepo;
   private final CommentRepo commentRepo;
 
-  public record GetPostByIdResponse(String id, String title, String body, List<CommentResponse> comments) {
+  public record GetPostByIdResponse(Long id, String title, String body, List<CommentResponse> comments) {
     GetPostByIdResponse(Post post, List<CommentResponse> comments) {
       this(post.getId(), post.getTitle(), post.getBody(), comments);
     }
@@ -31,7 +31,7 @@ public class GetPostById { // #3
     }
   }
   @GetMapping("posts/{postId}")
-  public GetPostByIdResponse getPostById(@PathVariable String postId) {
+  public GetPostByIdResponse getPostById(@PathVariable Long postId) {
     Post post = postRepo.findById(postId).orElseThrow();
     List<CommentResponse> comments = commentRepo.findByPostId(postId).stream()
         .map(CommentResponse::new)

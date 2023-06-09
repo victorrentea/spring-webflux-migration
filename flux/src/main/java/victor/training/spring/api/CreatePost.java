@@ -2,7 +2,6 @@ package victor.training.spring.api;
 
 import static java.time.LocalDateTime.now;
 
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,10 +25,7 @@ public class CreatePost { // #4
 
   public record CreatePostRequest(String title, String body, Long authorId) {
     Post toPost() {
-      return new Post()
-          .setNew(true)
-          .setId(UUID.randomUUID().toString())
-          .setTitle(title).setBody(body).setAuthorId(authorId);
+      return new Post().setTitle(title).setBody(body).setAuthorId(authorId);
     }
   }
 
@@ -41,14 +37,8 @@ public class CreatePost { // #4
         .then(commentRepo.save(createInitialComment(post)))
         .then(rabbitSender.sendMessage("Post created: " + post.getId())).then();
   }
-    //    return Mono.zip(mpost, mcomment).then(); // INSERT INTO COMMENT FK--> POST crapa daca nu a
-    // fost INSERT POST INCA
 
   private static Comment createInitialComment(Post post) {
-    return new Comment()
-        .setNew(true)
-        .setId(UUID.randomUUID().toString())
-        .setPostId(post.getId())
-        .setComment("Posted on " + now());
+    return new Comment().setComment("Posted on " + now()).setPostId(post.getId());
   }
 }

@@ -10,7 +10,6 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @Slf4j
 @EnableReactiveMethodSecurity
 @EnableWebFluxSecurity
-//@EnableR2dbcRepositories
 public class SecurityConfig  {
     @Bean
     SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http) {

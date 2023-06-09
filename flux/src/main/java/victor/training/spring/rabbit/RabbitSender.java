@@ -25,7 +25,7 @@ public class RabbitSender {
   }
 
   @Bean
-  public Queue myQueue() {
+  public Queue rabbitqueue() {
     return new Queue("rabbitqueue", false);
   }
 }

@@ -21,7 +21,7 @@ public class GetPostById { // #3
   private final CommentRepo commentRepo;
 
   public record GetPostByIdResponse(
-      String id, String title, String body, List<CommentResponse> comments) {
+      Long id, String title, String body, List<CommentResponse> comments) {
     GetPostByIdResponse(Post post, List<CommentResponse> comments) {
       this(post.getId(), post.getTitle(), post.getBody(), comments);
     }
@@ -34,15 +34,15 @@ public class GetPostById { // #3
   }
 
   @GetMapping("posts/{postId}")
-  public Mono<GetPostByIdResponse> getPostById(@PathVariable String postId) {
+  public Mono<GetPostByIdResponse> getPostById(@PathVariable Long postId) {
     return findPost(postId).zipWith(findComments(postId), GetPostByIdResponse::new);
   }
 
-  private Mono<List<CommentResponse>> findComments(String postId) {
+  private Mono<List<CommentResponse>> findComments(Long postId) {
     return commentRepo.findByPostId(postId).map(CommentResponse::new).collectList();
   }
 
-  private Mono<Post> findPost(String postId) {
+  private Mono<Post> findPost(Long postId) {
     return postRepo.findById(postId).switchIfEmpty(Mono.error(IllegalArgumentException::new));
   }
 }
