@@ -1,5 +1,7 @@
 package victor.training.spring.api;
 
+import static java.util.UUID.randomUUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,8 +15,6 @@ import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
 import victor.training.spring.sql.Post;
 import victor.training.spring.sql.PostRepo;
-
-import static java.util.UUID.randomUUID;
 
 @Slf4j
 @RestController

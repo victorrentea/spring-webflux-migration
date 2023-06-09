@@ -27,6 +27,7 @@ public class CreatePost { // #4
   public record CreatePostRequest(String title, String body, Long authorId) {
     Post toPost() {
       return new Post()
+          .setNew(true)
           .setId(UUID.randomUUID().toString())
           .setTitle(title).setBody(body).setAuthorId(authorId);
     }
@@ -45,6 +46,7 @@ public class CreatePost { // #4
 
   private static Comment createInitialComment(Post post) {
     return new Comment()
+        .setNew(true)
         .setId(UUID.randomUUID().toString())
         .setPostId(post.getId())
         .setComment("Posted on " + now());
