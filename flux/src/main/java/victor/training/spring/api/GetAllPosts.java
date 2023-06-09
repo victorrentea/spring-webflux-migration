@@ -34,7 +34,6 @@ public class GetAllPosts { // #2
     // "legacy" non-reactive library call care nu tre sa ruleze AICI BLOCAND THREADUL
     log.info("Cine cheama functia efectiva"); // TODO de ce vad parallel- ? treabuia netti9qur2572857-
     // "legacy" non-reactive library call
-    System.out.println(postRepo.findAll());
     return Mono.fromCallable(postRepo::findAll)
         .subscribeOn(Schedulers.boundedElastic()) // subscribeul in sus unde ruleaza -> e pe alt thread acum
         .flatMapMany(Flux::fromIterable)
