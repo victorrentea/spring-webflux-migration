@@ -28,6 +28,6 @@ public class GetAllPosts { // #2
   }
   @GetMapping("posts")
   public Flux<GetPostsResponse> getAllPosts() {
-    return postRepo.findAll().map(post -> new GetPostsResponse(post));
+    return postRepo.findAll().map(GetPostsResponse::new);
   }
 }
