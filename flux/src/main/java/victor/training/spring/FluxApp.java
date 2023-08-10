@@ -1,6 +1,9 @@
 package victor.training.spring;
 
+import io.r2dbc.spi.ConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +41,20 @@ public class FluxApp {
       e.printStackTrace(new PrintWriter(sw));
       return sw.toString(); // security breach! Don't do this in your project. It's just for easier debugging
     }
+  }
+
+  @Bean
+
+  public DSLContext dsl(ConnectionFactory connectionFactory) {
+//    ConnectionFactory connectionFactory = ConnectionFactories.get(
+//            ConnectionFactoryOptions
+//                    .parse("r2dbc:h2:file://localhost/~/r2dbc-test")
+//                    .mutate()
+//                    .option(ConnectionFactoryOptions.USER, "sa")
+//                    .option(ConnectionFactoryOptions.PASSWORD, "")
+//                    .build()
+//    );
+    return  DSL.using(connectionFactory);
   }
 
   @RestController
