@@ -1,11 +1,12 @@
 package victor.training.spring.mongo;
 
-import static java.time.LocalDateTime.now;
-
-import java.time.LocalDateTime;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
+
+import static java.time.LocalDateTime.now;
 
 @Document
 @Data

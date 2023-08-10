@@ -9,8 +9,8 @@ import victor.training.spring.mongo.Author;
 import victor.training.spring.mongo.AuthorRepo;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -31,12 +31,10 @@ public class GetAllAuthors { // #1
   }
   @GetMapping("authors")
   public List<GetAuthorsResponse> getAllAuthors() {
-    List<GetAuthorsResponse> list = new ArrayList<>();
-    for (Author author : authorRepo.findAll()) {
-      String email = fetchEmail(author.getId());
-      list.add(new GetAuthorsResponse(author, email));
-    }
-    return list;
+    return authorRepo.findAll()
+            .stream()
+            .map(author -> new GetAuthorsResponse(author, fetchEmail(author.getId())))
+            .collect(Collectors.toList());
   }
 
   private String fetchEmail(Long authorId) {
