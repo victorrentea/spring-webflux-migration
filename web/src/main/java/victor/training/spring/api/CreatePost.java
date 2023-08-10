@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import victor.training.spring.rabbit.RabbitSender;
-import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
-import victor.training.spring.sql.Post;
 import victor.training.spring.sql.PostRepo;
+import victor.training.spring.table.tables.records.CommentRecord;
+import victor.training.spring.table.tables.records.PostRecord;
 
 import static java.time.LocalDateTime.now;
 
@@ -23,18 +23,26 @@ public class CreatePost { // #4
   private final RabbitSender rabbitSender;
 
   public record CreatePostRequest(String title, String body, Long authorId) {
-    Post toPost() {
-      return new Post()
-          .setTitle(title).setBody(body).setAuthorId(authorId);
+    PostRecord toPost() {
+      PostRecord post = new PostRecord();
+      post.setTitle(title);
+      post.setBody(body);
+      post.setAuthorId(authorId);
+      return post;
     }
   }
   @PostMapping("posts")
   @Transactional
-  public void createPost(@RequestBody CreatePostRequest request) {
-    Post post = postRepo.save(request.toPost());
-    commentRepo.save(new Comment()
-        .setPostId(post.getId())
-        .setComment("Posted on " + now()));
-    rabbitSender.sendMessage("Post created: " + post.getId());
+  public Long createPost(@RequestBody CreatePostRequest request) {
+    Long postId = postRepo.save(request.toPost());
+
+
+    CommentRecord comment = new CommentRecord();
+    comment.setPostId(postId);
+    comment.setComment("Posted on " + now());
+    commentRepo.save(comment);
+
+    rabbitSender.sendMessage("Post created: " + postId);
+    return postId;
   }
 }

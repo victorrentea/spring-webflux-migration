@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import victor.training.spring.sql.Post;
 import victor.training.spring.sql.PostRepo;
+import victor.training.spring.table.tables.records.PostRecord;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class GetAllPosts { // #2
   }
 
   public record GetPostsResponse(Long id, String title) {
-    GetPostsResponse(Post post) {
+    GetPostsResponse(PostRecord post) {
       this(post.getId(), post.getTitle());
     }
   }

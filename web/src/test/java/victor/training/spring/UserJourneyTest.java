@@ -77,11 +77,14 @@ public class UserJourneyTest {
   @Autowired
   RabbitAdmin admin;
 
+  Long postId = 1L;
+
   @Test
   @Order(11)
   void create_post() {
     admin.purgeQueue(QUEUE_NAME); // drain the queue
-    rest.postForObject(BASE_URL + "posts", new CreatePostRequest(createdPostTitle, "Some Body", 15L), Void.class);
+    rest.postForObject(BASE_URL + "posts", new CreatePostRequest(createdPostTitle, "Some Body", 15L), Long.class);
+    System.out.println("Created post id : " + postId);
     Message receive = rabbitTemplate.receive(QUEUE_NAME, 500);
     assertThat(receive).describedAs("No message send to Rabbit").isNotNull();
     assertThat(new String(receive.getBody())).startsWith("Post created");
