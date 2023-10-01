@@ -15,8 +15,8 @@ import reactor.rabbitmq.Sender;
 public class RabbitSender {
   private final Sender sender;
 
-  public Mono<Void> sendMessage(String payload) {
-    OutboundMessage outboundMessage = new OutboundMessage("", "rabbitqueue", payload.getBytes());
+  public Mono<Void> sendPostCreatedEvent(String payload) {
+    OutboundMessage outboundMessage = new OutboundMessage("", "post-created-event", payload.getBytes());
     return sender.sendWithPublishConfirms(Mono.just(outboundMessage))
         .doOnComplete(()->log.info("Sent"))
         .then()
@@ -26,6 +26,6 @@ public class RabbitSender {
 
   @Bean
   public Queue rabbitqueue() {
-    return new Queue("rabbitqueue", false);
+    return new Queue("post-created-event", false);
   }
 }

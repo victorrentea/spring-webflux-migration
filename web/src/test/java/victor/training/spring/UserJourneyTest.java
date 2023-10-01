@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static victor.training.spring.api.UC3_GetPostDetails.GetPostDetailsResponse;
 import static victor.training.spring.api.UC4_CreatePost.CreatePostRequest;
-import static victor.training.spring.rabbit.RabbitSender.QUEUE_NAME;
+import static victor.training.spring.rabbit.RabbitSender.POST_CREATED_EVENT;
 
 @SuppressWarnings("DataFlowIssue")
 @TestInstance(PER_CLASS)
@@ -92,14 +92,14 @@ public class UserJourneyTest {
   @Test
   @Order(11)
   void create_post() {
-    admin.purgeQueue(QUEUE_NAME); // drain the queue
+    admin.purgeQueue(POST_CREATED_EVENT); // drain the queue
 
     HttpHeaders headers = new HttpHeaders();
     headers.setBasicAuth("user", "user");
     HttpEntity<CreatePostRequest> requestEntity = new HttpEntity<>(new CreatePostRequest(createdPostTitle, "Some Body", 15L), headers);
     rest.exchange(BASE_URL + "posts", HttpMethod.POST, requestEntity, Void.class, headers);
 
-    Message receive = rabbitTemplate.receive(QUEUE_NAME, 300);
+    Message receive = rabbitTemplate.receive(POST_CREATED_EVENT, 300);
     assertThat(receive).describedAs("No message send to Rabbit").isNotNull();
     assertThat(new String(receive.getBody())).contains("Post created");
   }

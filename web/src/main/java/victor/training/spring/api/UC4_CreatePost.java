@@ -36,7 +36,7 @@ public class UC4_CreatePost {
   public void createPost(@RequestBody CreatePostRequest request) {
     Post post = postRepo.save(request.toPost());
     commentRepo.save(createInitialComment(post.id()));
-    rabbitSender.sendMessage("Post created: " + post.id());
+    rabbitSender.sendPostCreatedEvent("Post created: " + post.id());
   }
 
   private static Comment createInitialComment(Long postId) {
