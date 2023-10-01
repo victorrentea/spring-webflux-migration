@@ -10,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.client.BufferingClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -40,19 +39,24 @@ public class UserJourneyTest {
   public static final String NEW_COMMENT = "new comment";
   // https://stackoverflow.com/questions/7952154/spring-resttemplate-how-to-enable-full-debugging-logging-of-requests-responses
   private final RestTemplate rest = new RestTemplate(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
-  private int initialPostsCounts;
   private final String createdPostTitle = "Title" + UUID.randomUUID();
+  @Autowired
+  RabbitTemplate rabbitTemplate;
+  @Autowired
+  RabbitAdmin admin;
+  private int initialPostsCounts;
 
   @BeforeEach
   final void before() {
     rest.setErrorHandler(
         new DefaultResponseErrorHandler() {
           @Override
-          protected void handleError(ClientHttpResponse response, HttpStatus statusCode) throws IOException {
+          public void handleError(ClientHttpResponse response) throws IOException {
             response.getBody().transferTo(System.err); // dump the server response text to serr to debug easier
-            super.handleError(response, statusCode);
+            super.handleError(response);
           }
-        });
+        }
+    );
   }
 
   @Test
@@ -70,7 +74,6 @@ public class UserJourneyTest {
         .contains(new GetAuthorsResponse(1000L, "John DOE", "jdoe@example.com", "Long description"));
   }
 
-
   @Test
   @Order(10)
   void get_all_posts() {
@@ -80,11 +83,6 @@ public class UserJourneyTest {
         .contains(new GetPostsResponse(1L, "Hello world!"))
         .contains(new GetPostsResponse(2L, "Locked Post"));
   }
-
-  @Autowired
-  RabbitTemplate rabbitTemplate;
-  @Autowired
-  RabbitAdmin admin;
 
   @Test
   @Order(11)
