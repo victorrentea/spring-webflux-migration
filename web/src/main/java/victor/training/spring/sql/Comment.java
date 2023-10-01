@@ -32,4 +32,8 @@ public class Comment {
     this.comment = comment;
     this.name = name;
   }
+
+  public String comment() {
+    return comment;
+  }
 }

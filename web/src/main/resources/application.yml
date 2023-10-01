@@ -1,7 +1,8 @@
-
+logging.level:
+  org.springframework.amqp.rabbit: DEBUG
 spring:
-#  r2dbc:
-#    url: r2dbc:postgresql://localhost:5432/postgres
+  #  r2dbc:
+  #    url: r2dbc:postgresql://localhost:5432/postgres
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
     driver-class-name: org.postgresql.Driver
@@ -24,6 +25,12 @@ spring:
     port: 5672
     username: guest
     password: guest
+  cloud:
+    stream:
+      bindings:
+        onLikeEvent-in-0:
+            destination: likes
+            group: app
 
 logging:
   level:

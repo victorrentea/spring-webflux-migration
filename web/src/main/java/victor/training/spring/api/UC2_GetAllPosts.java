@@ -12,12 +12,12 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class GetAllPosts { // #2
+public class UC2_GetAllPosts {
   private final PostRepo postRepo;
 
   public record GetPostsResponse(Long id, String title) {
     GetPostsResponse(Post post) {
-      this(post.getId(), post.getTitle());
+      this(post.id(), post.title());
     }
   }
   @GetMapping("posts")

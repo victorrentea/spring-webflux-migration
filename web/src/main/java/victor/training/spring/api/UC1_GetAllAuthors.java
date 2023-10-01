@@ -1,5 +1,6 @@
 package victor.training.spring.api;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -10,32 +11,31 @@ import org.springframework.web.client.RestTemplate;
 import victor.training.spring.mongo.Author;
 import victor.training.spring.mongo.AuthorRepo;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class GetAllAuthors { // #1
+public class UC1_GetAllAuthors {
   private final AuthorRepo authorRepo; // MongoDB
   private final ContactApi contactApi;
 
   @PostConstruct
-  public void initialDataInMongo() {
-    authorRepo.save(new Author().setId(1000L).setName("John DOE").setBio("Long description"));
+  public void insertInitialDataInMongo() {
+    authorRepo.save(new Author(1000L, "John DOE", "Long description"));
   }
 
   public record GetAuthorsResponse(Long id, String name, String email, String bio) {
     GetAuthorsResponse(Author author, String email) {
-      this(author.getId(), author.getName(),email, author.getBio());
+      this(author.id(), author.name(),email, author.bio());
     }
   }
   @GetMapping("authors")
   public List<GetAuthorsResponse> getAllAuthors() {
     List<GetAuthorsResponse> list = new ArrayList<>();
     for (Author author : authorRepo.findAll()) {
-      String email = contactApi.fetchEmail(author.getId());
+      String email = contactApi.fetchEmail(author.id());
       list.add(new GetAuthorsResponse(author, email));
     }
     return list;
