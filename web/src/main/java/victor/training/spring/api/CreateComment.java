@@ -23,8 +23,7 @@ public class CreateComment { // #5
   private final CommentRepo commentRepo;
   private final RestTemplate restTemplate;
 
-  public record CreateCommentRequest(String comment) {
-  }
+  public record CreateCommentRequest(String comment) {}
   @PreAuthorize("isAuthenticated()")
   @PostMapping("posts/{postId}/comments")
   public void createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request) {

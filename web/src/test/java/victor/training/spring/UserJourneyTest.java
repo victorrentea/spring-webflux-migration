@@ -23,6 +23,7 @@ import victor.training.spring.api.GetAllPosts.GetPostsResponse;
 import java.io.IOException;
 import java.util.UUID;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
@@ -56,7 +57,15 @@ public class UserJourneyTest {
 
   @Test
   @Order(1)
-  void get_authors() {
+  void get_all_authors() {
+    assertThat(rest.getForObject(BASE_URL + "authors", GetAuthorsResponse[].class))
+        .contains(new GetAuthorsResponse(1000L, "John DOE", "jdoe@example.com", "Long description"));
+  }
+
+  @Test
+  @Order(2)
+  @Timeout(value = 99, unit = MILLISECONDS)
+  void get_all_authors_again_is_faster_due_to_caching() {
     assertThat(rest.getForObject(BASE_URL + "authors", GetAuthorsResponse[].class))
         .contains(new GetAuthorsResponse(1000L, "John DOE", "jdoe@example.com", "Long description"));
   }
@@ -64,7 +73,7 @@ public class UserJourneyTest {
 
   @Test
   @Order(10)
-  void get_posts() {
+  void get_all_posts() {
     GetPostsResponse[] posts = rest.getForObject(BASE_URL + "posts", GetPostsResponse[].class);
     initialPostsCounts = posts.length;
     assertThat(posts)
@@ -135,7 +144,7 @@ public class UserJourneyTest {
   }
 
   @AfterAll
-  public void method() {
+  public void END() {
     System.err.println("⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️");
     System.err.println("** Please check the output of the deployed application **");
     System.err.println("⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️");

@@ -40,6 +40,13 @@ public class FluxApp {
     }
   }
 
+  static {  // ⭐️⭐️⭐️ Detection of blocking code in a reactive application:
+    // ⚠️ add to startup VM options: -XX:+AllowRedefinitionToAddDeleteMethods
+//    BlockHound.builder()
+//        .allowBlockingCallsInside("io.r2dbc.postgresql.authentication.SASLAuthenticationHandler", "handleAuthenticationSASL")
+//        .install();
+  }
+
   @RestController
   public static class RedirectRootToSwaggerUI {
     @GetMapping

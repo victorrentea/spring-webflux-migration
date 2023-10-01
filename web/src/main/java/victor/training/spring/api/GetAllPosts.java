@@ -15,13 +15,6 @@ import java.util.List;
 public class GetAllPosts { // #2
   private final PostRepo postRepo;
 
-  static {  // ⭐️⭐️⭐️ Detection of blocking code in a reactive application:
-    // ⚠️ add to startup VM options: -XX:+AllowRedefinitionToAddDeleteMethods
-//    BlockHound.builder()
-//        .allowBlockingCallsInside("io.r2dbc.postgresql.authentication.SASLAuthenticationHandler", "handleAuthenticationSASL")
-//        .install();
-  }
-
   public record GetPostsResponse(Long id, String title) {
     GetPostsResponse(Post post) {
       this(post.getId(), post.getTitle());

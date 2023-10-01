@@ -3,6 +3,7 @@ package victor.training.spring;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 
+@EnableCaching
 @SpringBootApplication
 public class WebApp {
   public static void main(String[] args) {

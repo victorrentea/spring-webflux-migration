@@ -24,10 +24,10 @@ public class CreatePost { // #4
 
   public record CreatePostRequest(String title, String body, Long authorId) {
     Post toPost() {
-      return new Post()
-          .setTitle(title).setBody(body).setAuthorId(authorId);
+      return new Post().setTitle(title).setBody(body).setAuthorId(authorId);
     }
   }
+
   @PostMapping("posts")
   @Transactional
   public void createPost(@RequestBody CreatePostRequest request) {
