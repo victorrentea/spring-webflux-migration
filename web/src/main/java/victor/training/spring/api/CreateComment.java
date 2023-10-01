@@ -39,10 +39,7 @@ public class CreateComment { // #5
 
   private static Comment createComment(String comment, Long postId) {
     String loggedInUser = SecurityContextHolder.getContext().getAuthentication().getName();
-    return new Comment()
-        .setName(loggedInUser)
-        .setComment(comment)
-        .setPostId(postId);
+    return new Comment(postId, comment, loggedInUser);
   }
 
   private boolean checkAuthorAllowsComments(Long authorId) {

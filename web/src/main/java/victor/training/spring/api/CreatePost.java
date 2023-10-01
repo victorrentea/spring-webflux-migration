@@ -32,9 +32,7 @@ public class CreatePost { // #4
   @Transactional
   public void createPost(@RequestBody CreatePostRequest request) {
     Post post = postRepo.save(request.toPost());
-    commentRepo.save(new Comment()
-        .setPostId(post.getId())
-        .setComment("Posted on " + now()));
+    commentRepo.save(new Comment(post.getId(), "Posted on " + now()));
     rabbitSender.sendMessage("Post created: " + post.getId());
   }
 }

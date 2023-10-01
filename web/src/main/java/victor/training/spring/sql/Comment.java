@@ -20,4 +20,16 @@ public class Comment {
   private String comment;
   private String name;
   private LocalDateTime createdAt = now();
+
+  public Comment() {}
+
+  public Comment(Long postId, String comment) {
+    this(postId, comment, null);
+  }
+
+  public Comment(Long postId, String comment, String name) {
+    this.postId = postId;
+    this.comment = comment;
+    this.name = name;
+  }
 }

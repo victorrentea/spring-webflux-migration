@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+//import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -27,6 +28,11 @@ public class WebApp {
   public RestTemplate restTemplate() {
     return new RestTemplate();
   }
+
+//  @Bean
+//  public WebClient webClient() {
+//    return WebClient.create();
+//  }
 
   @Slf4j
   @RestControllerAdvice
