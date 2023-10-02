@@ -26,3 +26,6 @@ alter table public.comment owner to postgres;
 
 INSERT INTO public.post (author_id, body, title) VALUES (1000, 'European Software Crafters', 'Hello world!');
 INSERT INTO public.post (author_id, body, title) VALUES (1001, 'No Comments', 'Locked Post');
+INSERT INTO public.post (author_id, body, title) VALUES (1000, 'Body3', 'Post3');
+INSERT INTO public.post (author_id, body, title) VALUES (1000, 'Body4', 'Post4');
+INSERT INTO public.post (author_id, body, title) VALUES (1000, 'Body5', 'Post5');
