@@ -1,6 +1,7 @@
 package victor.training.spring;
 
 import org.awaitility.Awaitility;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.springframework.amqp.core.Message;
@@ -66,13 +67,19 @@ public abstract class UserJourney {
   @Autowired
   RabbitAdmin admin;
   private int initialPostsCounts;
+  private String currentTestName;
 
   @BeforeAll
   public void waitForAppToStart() {
     WaitForApp.waitForApp(baseUrl());
+    rest.getInterceptors().add((request, body, execution) -> {
+      request.getHeaders().add("test-name", currentTestName);
+      return execution.execute(request, body);
+    });
   }
   @BeforeEach
-  final void before() {
+  final void before(TestInfo testInfo) {
+    currentTestName = testInfo.getDisplayName();
     rest.setErrorHandler(
         new DefaultResponseErrorHandler() {
           @Override
@@ -114,10 +121,9 @@ public abstract class UserJourney {
   void uc4_create_post() {
     admin.purgeQueue(POST_CREATED_EVENT); // drain the queue
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setBasicAuth("user", "user");
-    HttpEntity<CreatePostRequest> requestEntity = new HttpEntity<>(new CreatePostRequest(createdPostTitle, "Some Body", 15L), headers);
-    rest.exchange(baseUrl() + "posts", HttpMethod.POST, requestEntity, Void.class, headers);
+    HttpEntity<CreatePostRequest> requestEntity = new HttpEntity<>(
+        new CreatePostRequest(createdPostTitle, "Some Body", 15L), basicAuth());
+    rest.exchange(baseUrl() + "posts", HttpMethod.POST, requestEntity, Void.class);
 
     Message receive = rabbitTemplate.receive(POST_CREATED_EVENT, 300);
     assertThat(receive).describedAs("No message send to Rabbit").isNotNull();
@@ -125,13 +131,15 @@ public abstract class UserJourney {
   }
 
   @Test
-  @Order(12)
+  @Order(14)
   void uc3_get_post_details() {
     GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/1", GetPostDetailsResponse.class);
     assertThat(response)
         .extracting(GetPostDetailsResponse::id, GetPostDetailsResponse::title, GetPostDetailsResponse::body)
         .containsExactly(1L, "Hello world!", "European Software Crafters");
   }
+
+
 
   private String newPostId;
   @Test
@@ -143,6 +151,25 @@ public abstract class UserJourney {
         .map(GetPostsResponse::id)
         .orElseThrow().toString();
   }
+
+
+  @Test
+  @Order(16)
+  void uc4_create_post_tx_failed() {
+    HttpEntity<CreatePostRequest> requestEntity = new HttpEntity<>(
+        new CreatePostRequest("x".repeat(254), "Some Body", 15L), basicAuth());
+    assertThatThrownBy(()->rest.exchange(baseUrl() + "posts", HttpMethod.POST, requestEntity, Void.class));
+    GetPostsResponse[] posts = rest.getForObject(baseUrl() + "posts", GetPostsResponse[].class);
+    assertThat(posts).describedAs("No new post should have been created").hasSize(initialPostsCounts + 1);
+  }
+
+  @NotNull
+  private static HttpHeaders basicAuth() {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBasicAuth("user", "user");
+    return headers;
+  }
+
   @Test
   @Order(17)
   void uc4_get_new_post_details_shows_initial_comment() {
@@ -157,7 +184,7 @@ public abstract class UserJourney {
   }
 
   @Test
-  @Order(21)
+  @Order(20)
   void uc5_create_comment() {
     rest.postForObject(baseUrl() + "posts/1/comments", new CreateCommentRequest(NEW_COMMENT, "troll"), Void.class);
   }

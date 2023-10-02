@@ -37,16 +37,16 @@ public class UC4_CreatePost {
   public Mono<Void> createPost(@RequestBody CreatePostRequest request) {
     Mono<Post> postMono = postRepo.save(request.toPost());
     return postMono.flatMap(post -> Mono.zip(
-                rabbitSender.sendPostCreatedEvent("Post created: " + post.id()).thenReturn(1),
-                createInitialComment(post.id()).flatMap(commentRepo::save)
+                createInitialComment(post.id(), request.title()).flatMap(commentRepo::save),
+                rabbitSender.sendPostCreatedEvent("Post created: " + post.id()).thenReturn(1)
             )
         )
         .then();
   }
 
-  private static Mono<Comment> createInitialComment(Long postId) {
+  private static Mono<Comment> createInitialComment(Long postId, String postTitle) {
     return ReactiveSecurityContextHolder.getContext()
         .map(context -> context.getAuthentication().getName())
-        .map(loggedInUser -> new Comment(postId, "Posted on " + now(), loggedInUser));
+        .map(loggedInUser -> new Comment(postId, "Posted on " + now() + ": " + postTitle, loggedInUser));
   }
 }

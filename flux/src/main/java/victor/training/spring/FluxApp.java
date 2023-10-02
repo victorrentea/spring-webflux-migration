@@ -64,8 +64,7 @@ public class FluxApp {
     @NotNull
     @Override
     public Mono<Void> filter(ServerWebExchange serverWebExchange, WebFilterChain webFilterChain) {
-      log.info("▶️" + serverWebExchange.getRequest().getMethod() + " " + serverWebExchange.getRequest().getURI().getPath());
-
+      log.info("▶️" + serverWebExchange.getRequest().getMethod() + " " + serverWebExchange.getRequest().getURI().getPath() + " 👉 " + serverWebExchange.getRequest().getHeaders().get("test-name"));
       return webFilterChain.filter(serverWebExchange);
     }
   }

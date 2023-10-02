@@ -35,12 +35,12 @@ public class UC4_CreatePost {
   @Transactional
   public void createPost(@RequestBody CreatePostRequest request) {
     Post post = postRepo.save(request.toPost());
-    commentRepo.save(createInitialComment(post.id()));
+    commentRepo.save(createInitialComment(post.id(), request.title()));
     rabbitSender.sendPostCreatedEvent("Post created: " + post.id());
   }
 
-  private static Comment createInitialComment(long postId) {
+  private static Comment createInitialComment(long postId, String postTitle) {
     String loggedInUser = SecurityContextHolder.getContext().getAuthentication().getName();
-    return new Comment(postId, "Posted on " + now(), loggedInUser);
+    return new Comment(postId, "Posted on " + now() + ": " + postTitle, loggedInUser);
   }
 }

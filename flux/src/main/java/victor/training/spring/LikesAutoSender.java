@@ -26,7 +26,7 @@ public class LikesAutoSender {
     String json = """
         {"postId":%d, "likes":%d}""".formatted(postId, counter.addAndGet(new Random().nextInt(100)));
     OutboundMessage message = new OutboundMessage("", "likes.flux", json.getBytes());
-    sender.sendWithPublishConfirms(just(message)).blockLast(); // OK to block in scheduler
+    sender.sendWithPublishConfirms(just(message)).blockLast(); // It's OK to .block() in scheduler
   }
 
 }
