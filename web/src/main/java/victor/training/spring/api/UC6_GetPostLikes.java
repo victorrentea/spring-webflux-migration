@@ -19,9 +19,13 @@ import java.util.function.Consumer;
 public class UC6_GetPostLikes {
   private final Map<Long, Integer> postLikes = new ConcurrentHashMap<>();
 
-  public record LikeEvent(long postId, int likes) {
+  @GetMapping("posts/{postId}/likes")
+  public Integer getPostLikes(@PathVariable long postId) {
+    return postLikes.getOrDefault(postId, 0);
   }
 
+  public record LikeEvent(long postId, int likes) {
+  }
   @Bean
   public Consumer<LikeEvent> onLikeEvent() {
     return likeEvent -> {
@@ -30,16 +34,11 @@ public class UC6_GetPostLikes {
     };
   }
 
-  @GetMapping("posts/{postId}/likes")
-  public Integer getPostLikes(@PathVariable long postId) {
-    return postLikes.getOrDefault(postId, 0);
-  }
-
   // TODO push live likes to browser for UX❤️ http://localhost:8081/posts/2/likes-live
   // @GetMapping(value = "posts/{postId}/likes-live", produces = "text/event-stream")
   // public Flux<Integer> getPostLikesLive(@PathVariable long postId) {
 
-  // TODO every 1 second emit new post titles
+  // TODO every 1 second emit titles of recently liked posts
   public record LikedPosts(Collection<String> titles) {
   }
 }

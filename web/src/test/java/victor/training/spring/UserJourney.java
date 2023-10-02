@@ -16,12 +16,12 @@ import org.springframework.http.client.BufferingClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import victor.training.spring.api.UC1_GetAllAuthors.GetAuthorsResponse;
 import victor.training.spring.api.UC2_GetAllPosts.GetPostsResponse;
 import victor.training.spring.api.UC5_CreateComment.CreateCommentRequest;
 import victor.training.spring.api.UC6_GetPostLikes;
-import victor.training.spring.util.HumanReadableTestNames;
 import victor.training.spring.util.WaitForApp;
 
 import java.io.IOException;
@@ -39,7 +39,6 @@ import static victor.training.spring.rabbit.RabbitSender.POST_CREATED_EVENT;
 
 @SuppressWarnings("DataFlowIssue")
 @TestInstance(PER_CLASS)
-@DisplayNameGeneration(HumanReadableTestNames.class)
 @SpringBootTest
 @TestMethodOrder(OrderAnnotation.class)
 public abstract class UserJourney {
@@ -90,6 +89,12 @@ public abstract class UserJourney {
         }
     );
   }
+  @NotNull
+  private static HttpHeaders basicAuth() {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBasicAuth("user", "user");
+    return headers;
+  }
 
   @Test
   @Order(1)
@@ -99,7 +104,7 @@ public abstract class UserJourney {
   }
 
   @Test
-  @Order(1000)
+  @Order(100)
   @Timeout(value = 99, unit = MILLISECONDS)
   void uc2_get_all_authors_again_is_faster_due_to_caching() {
     assertThat(rest.getForObject(baseUrl() + "authors", GetAuthorsResponse[].class))
@@ -155,6 +160,13 @@ public abstract class UserJourney {
 
   @Test
   @Order(16)
+  void uc4_get_new_post_details_shows_initial_comment() {
+    GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/" + newPostId, GetPostDetailsResponse.class);
+    assertThat(response.comments()).describedAs("Comments are missing at " + baseUrl() + "posts/" + newPostId).hasSize(1);
+  }
+
+  @Test
+  @Order(17)
   void uc4_create_post_tx_failed() {
     HttpEntity<CreatePostRequest> requestEntity = new HttpEntity<>(
         new CreatePostRequest("x".repeat(254), "Some Body", 15L), basicAuth());
@@ -163,19 +175,6 @@ public abstract class UserJourney {
     assertThat(posts).describedAs("No new post should have been created").hasSize(initialPostsCounts + 1);
   }
 
-  @NotNull
-  private static HttpHeaders basicAuth() {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setBasicAuth("user", "user");
-    return headers;
-  }
-
-  @Test
-  @Order(17)
-  void uc4_get_new_post_details_shows_initial_comment() {
-    GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/" + newPostId, GetPostDetailsResponse.class);
-    assertThat(response.comments()).describedAs(baseUrl() + "posts/" + newPostId).hasSize(1);
-  }
   @Test
   @Order(18)
   void uc4_get_new_post_details_showsLoggedInUser_in_comment() {
@@ -185,7 +184,7 @@ public abstract class UserJourney {
 
   @Test
   @Order(20)
-  void uc5_create_comment() {
+  void uc5_create_comment_ok() {
     rest.postForObject(baseUrl() + "posts/1/comments", new CreateCommentRequest(NEW_COMMENT, "troll"), Void.class);
   }
 
@@ -207,12 +206,13 @@ public abstract class UserJourney {
   @Test
   @Order(23)
   void uc5_create_comment_fails_for_nonexisting_postId() {
-    assertThatThrownBy(() -> rest.postForObject(baseUrl() + "posts/119142/comments",new CreateCommentRequest(NEW_COMMENT, "troll"), Void.class));
+    assertThatThrownBy(() -> rest.postForObject(baseUrl() + "posts/119142/comments",new CreateCommentRequest(NEW_COMMENT, "troll"), Void.class))
+        .isInstanceOf(HttpServerErrorException.InternalServerError.class);
   }
 
 
   @Test
-  @Order(30)
+  @Order(300)
   void uc6_getPostLikes() {
     UC6_GetPostLikes.LikeEvent event = new UC6_GetPostLikes.LikeEvent(1L, 1);
     rabbitTemplate.convertAndSend("likes", "likes.web", event);

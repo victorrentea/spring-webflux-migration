@@ -27,26 +27,26 @@ public class UC5_CreateComment {
   @PostMapping("posts/{postId}/comments")
   public void createComment(@PathVariable long postId, @RequestBody CreateCommentRequest request) {
     Post post = postRepo.findById(postId).orElseThrow();
-    boolean offensive = checkOffensive(post.body(), request.comment());
-    boolean unlocked = checkAuthorAllowsComments(post.authorId());
-    if (offensive && unlocked) {
+    boolean safe = isSafe(post.body(), request.comment());
+    boolean unlocked = isUnlocked(post.authorId());
+    if (safe && unlocked) {
       commentRepo.save(new Comment(post.id(), request.comment(), request.name()));
     } else {
       throw new IllegalArgumentException("Comment Rejected");
     }
   }
 
-  private boolean checkAuthorAllowsComments(long authorId) {
+  private boolean isUnlocked(long authorId) {
     String url = "http://localhost:9999/author/" + authorId + "/comments";
     String result = restTemplate.getForObject(url, String.class);
     return Boolean.parseBoolean(result);
   }
 
-  private boolean checkOffensive(String body, String comment) {
+  private boolean isSafe(String postBody, String comment) {
     record Request(String body, String comment) {
     }
     String url = "http://localhost:9999/safety-check";
-    String result = restTemplate.postForObject(url, new Request(body, comment), String.class);
+    String result = restTemplate.postForObject(url, new Request(postBody, comment), String.class);
     return "OK".equals(result);
   }
 }
