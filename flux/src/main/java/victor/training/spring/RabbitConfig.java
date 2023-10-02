@@ -14,7 +14,7 @@ import reactor.rabbitmq.Sender;
 import reactor.rabbitmq.SenderOptions;
 
 @Configuration
-public class RabbitReactiveConfig {
+public class RabbitConfig {
   @Autowired
   public void init(AmqpAdmin amqpAdmin) {
     amqpAdmin.declareQueue(new Queue("post-created-event", false, false, false));

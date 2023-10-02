@@ -23,7 +23,7 @@ public class LikesAutoSender {
   @Scheduled(fixedRate = 300)
   public void sendPostCreatedEvent() {
     Long postId = new Random().nextLong(4) + 2;
-    if (Math.random()<0.5) postId = null;
+//    if (Math.random()<0.5) postId = null;
     String json = """
         {"postId":%s, "likes":%d}""".formatted(postId, counter.addAndGet(new Random().nextInt(100)));
     OutboundMessage message = new OutboundMessage("", "likes.flux", json.getBytes());
