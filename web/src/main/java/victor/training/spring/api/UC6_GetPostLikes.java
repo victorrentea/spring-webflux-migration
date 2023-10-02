@@ -38,7 +38,7 @@ public class UC6_GetPostLikes {
   // @GetMapping(value = "posts/{postId}/likes-live", produces = "text/event-stream")
   // public Flux<Integer> getPostLikesLive(@PathVariable long postId) {
 
-  // TODO every 1 second emit titles of recently liked posts
+  // TODO every 1 second emit titles of recently liked posts. Hard: keep listening despite failed messages
   public record LikedPosts(Collection<String> titles) {
   }
 }
