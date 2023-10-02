@@ -28,13 +28,14 @@ public class UC6_GetPostLikes {
   public Integer getPostLikes(@PathVariable long postId) {
     return postLikes.getOrDefault(postId, 0);
   }
-  public record LikeEvent(long postId, int likes) {
+  public record LikeEvent(Long postId, int likes) {
 
   }
 
   @Bean
   public Function<Flux<LikeEvent>, Flux<LikedPosts>> onLikeEvent() {
     return flux -> flux
+        .doOnNext(event -> log.info("Received {}", event))
         .doOnNext(event -> postLikes.put(event.postId(), event.likes()))
         .doOnNext(eventSink::tryEmitNext)
         .map(LikeEvent::postId)
@@ -43,6 +44,7 @@ public class UC6_GetPostLikes {
             .map(Post::title)
             .collectList())
         .map(LikedPosts::new)
+        .onErrorContinue((e, o) -> log.error("Ignoring element {} for exception {}", o, e.getMessage()))
         .doOnNext(message -> log.info("Sending {}", message));
   }
   // TODO every 1 second emit titles of recently liked posts

@@ -22,9 +22,10 @@ public class LikesAutoSender {
   private static final AtomicInteger counter = new AtomicInteger(1);
   @Scheduled(fixedRate = 300)
   public void sendPostCreatedEvent() {
-    long postId = new Random().nextInt(5) + 2;
+    Long postId = new Random().nextLong(4) + 2;
+    if (Math.random()<0.5) postId = null;
     String json = """
-        {"postId":%d, "likes":%d}""".formatted(postId, counter.addAndGet(new Random().nextInt(100)));
+        {"postId":%s, "likes":%d}""".formatted(postId, counter.addAndGet(new Random().nextInt(100)));
     OutboundMessage message = new OutboundMessage("", "likes.flux", json.getBytes());
     sender.sendWithPublishConfirms(just(message)).blockLast(); // It's OK to .block() in scheduler
   }

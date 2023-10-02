@@ -50,7 +50,8 @@ public class UC1_GetAllAuthors {
     public Mono<String> fetchEmail(long authorId) {
       log.info("Retrieving email for author {}", authorId);
       String uri = "http://localhost:9999/contact/" + authorId + "/email";
-      return webClient.get().uri(uri).retrieve().bodyToMono(String.class);
+      return webClient.get().uri(uri).retrieve().bodyToMono(String.class)
+          .cache();
     }
   }
 }
