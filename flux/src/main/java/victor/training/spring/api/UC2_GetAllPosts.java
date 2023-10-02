@@ -4,10 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import victor.training.spring.sql.Post;
 import victor.training.spring.sql.PostRepo;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -15,13 +14,13 @@ import java.util.List;
 public class UC2_GetAllPosts {
   private final PostRepo postRepo;
 
-  public record GetPostsResponse(long id, String title) {
+  public record GetPostsResponse(Long id, String title) {
     GetPostsResponse(Post post) {
       this(post.id(), post.title());
     }
   }
   @GetMapping("posts")
-  public List<GetPostsResponse> getAllPosts() {
-    return postRepo.findAll().stream().map(GetPostsResponse::new).toList();
+  public Flux<GetPostsResponse> getAllPosts() {
+    return postRepo.findAll().map(GetPostsResponse::new);
   }
 }

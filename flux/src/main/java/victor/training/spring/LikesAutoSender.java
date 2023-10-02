@@ -1,4 +1,4 @@
-package victor.training.spring.rabbit;
+package victor.training.spring;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,14 +20,13 @@ import static reactor.core.publisher.Mono.just;
 public class LikesAutoSender {
   private final Sender sender;
   private static final AtomicInteger counter = new AtomicInteger(1);
-  @Scheduled(fixedRate = 1000)
+  @Scheduled(fixedRate = 300)
   public void sendPostCreatedEvent() {
-    for (int postId = 1; postId < 6; postId++) {
-      String json = """
-          {"postId":%d, "likes":%d}""".formatted(postId, counter.addAndGet(new Random().nextInt(100)));
-      OutboundMessage message = new OutboundMessage("", "likes.flux", json.getBytes());
-      sender.sendWithPublishConfirms(just(message)).blockLast(); // OK to block in scheduler
-    }
+    long postId = new Random().nextInt(5) + 2;
+    String json = """
+        {"postId":%d, "likes":%d}""".formatted(postId, counter.addAndGet(new Random().nextInt(100)));
+    OutboundMessage message = new OutboundMessage("", "likes.flux", json.getBytes());
+    sender.sendWithPublishConfirms(just(message)).blockLast(); // OK to block in scheduler
   }
 
 }

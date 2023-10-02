@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -30,10 +31,15 @@ public class UC6_GetPostLikes {
   }
 
   @GetMapping("posts/{postId}/likes")
-  public Integer getPostLikes(@PathVariable Long postId) {
+  public Integer getPostLikes(@PathVariable long postId) {
     return postLikes.getOrDefault(postId, 0);
   }
 
-  // TODO
-  // @GetMapping(value = "posts/{postId}/likes-live",produces = "text/event-stream")
+  // TODO push live likes to browser for UX❤️ http://localhost:8081/posts/2/likes-live
+  // @GetMapping(value = "posts/{postId}/likes-live", produces = "text/event-stream")
+  // public Flux<Integer> getPostLikesLive(@PathVariable long postId) {
+
+  // TODO every 1 second emit new post titles
+  public record LikedPosts(Collection<String> titles) {
+  }
 }

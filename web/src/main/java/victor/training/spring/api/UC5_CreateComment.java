@@ -25,7 +25,7 @@ public class UC5_CreateComment {
   }
 
   @PostMapping("posts/{postId}/comments")
-  public void createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request) {
+  public void createComment(@PathVariable long postId, @RequestBody CreateCommentRequest request) {
     Post post = postRepo.findById(postId).orElseThrow();
     boolean offensive = checkOffensive(post.body(), request.comment());
     boolean unlocked = checkAuthorAllowsComments(post.authorId());
@@ -36,7 +36,7 @@ public class UC5_CreateComment {
     }
   }
 
-  private boolean checkAuthorAllowsComments(Long authorId) {
+  private boolean checkAuthorAllowsComments(long authorId) {
     String url = "http://localhost:9999/author/" + authorId + "/comments";
     String result = restTemplate.getForObject(url, String.class);
     return Boolean.parseBoolean(result);

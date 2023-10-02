@@ -13,19 +13,20 @@ import reactor.rabbitmq.Sender;
 @RequiredArgsConstructor
 @Configuration
 public class RabbitSender {
+  public static final String POST_CREATED_EVENT = "post-created-event";
   private final Sender sender;
 
-  public Mono<Void> sendPostCreatedEvent(String payload) {
-    OutboundMessage outboundMessage = new OutboundMessage("", "post-created-event", payload.getBytes());
+  public Mono<Void> sendPostCreatedEvent(String message) {
+    log.info("Sending message: " + message);
+    OutboundMessage outboundMessage = new OutboundMessage("", POST_CREATED_EVENT, message.getBytes());
     return sender.sendWithPublishConfirms(Mono.just(outboundMessage))
-        .doOnComplete(()->log.info("Sent"))
-        .then()
-        .doOnSubscribe(e-> log.info("Sending message: " + payload))
-        ;
+        .doOnSubscribe(s -> log.info("sending " + message) )
+        .doOnComplete(() -> log.info("completed " + message))
+        .doOnNext(m -> log.info("sent " + m)).then();
   }
 
   @Bean
-  public Queue rabbitqueue() {
-    return new Queue("post-created-event", false);
+  public Queue myQueue() { // create queue at startup
+    return new Queue(POST_CREATED_EVENT, false);
   }
 }

@@ -7,12 +7,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import victor.training.spring.mongo.Author;
 import victor.training.spring.mongo.AuthorRepo;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -24,28 +23,36 @@ public class UC1_GetAllAuthors {
   @PostConstruct
   public void insertInitialDataInMongo() {
     log.info("Insert in Mongo");
-    authorRepo.save(new Author(1000L, "John DOE", "Long description"));
+    authorRepo.save(new Author(1000L, "John DOE", "Long description")).block();
   }
 
-  public record GetAuthorsResponse(long id, String name, String email, String bio) {
+  public record GetAuthorsResponse(Long id, String name, String email, String bio) {
     GetAuthorsResponse(Author author, String email) {
       this(author.id(), author.name(),email, author.bio());
     }
   }
   @GetMapping("authors")
-  public List<GetAuthorsResponse> getAllAuthors() {
-    return authorRepo.findAll().stream().map(author -> new GetAuthorsResponse(author, contactApi.fetchEmail(author.id()))).collect(Collectors.toList());
+  public Flux<GetAuthorsResponse> getAllAuthors() {
+    return authorRepo.findAll()
+        .flatMap(this::toDto);
+
+  }
+
+  private Mono<GetAuthorsResponse> toDto(Author author) {
+    return contactApi.fetchEmail(author.id())
+        .map(email -> new GetAuthorsResponse(author, email));
   }
 
   @Component
   @RequiredArgsConstructor
   public static class ContactApi {
-    private final RestTemplate restTemplate;
+    private final WebClient webClient;
     @Cacheable("contact-email")
-    public String fetchEmail(long authorId) {
-      log.info("Retrieving email for author {}", authorId);
+    public Mono<String> fetchEmail(Long authorId) {
       String uri = "http://localhost:9999/contact/" + authorId + "/email";
-      return restTemplate.getForObject(uri, String.class);
+      return webClient.get().uri(uri).retrieve().bodyToMono(String.class)
+          .doOnSubscribe(s -> log.info("Fetching email for author {}", authorId))
+          .cache();
     }
   }
 }

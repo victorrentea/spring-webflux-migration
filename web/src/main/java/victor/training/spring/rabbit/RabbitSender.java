@@ -15,11 +15,11 @@ public class RabbitSender {
   private final RabbitTemplate rabbitTemplate;
 
   public void sendPostCreatedEvent(String message) {
+    log.info("Sending message: " + message);
     rabbitTemplate.convertAndSend(POST_CREATED_EVENT, message);
-    log.info("Sent message: " + message);
   }
 
-  @Bean
+  @Bean // create queue at startup
   public Queue myQueue() { // create queue at startup
     return new Queue(POST_CREATED_EVENT, false);
   }

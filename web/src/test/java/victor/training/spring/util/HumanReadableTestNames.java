@@ -1,4 +1,4 @@
-package victor.training.spring;
+package victor.training.spring.util;
 
 import org.junit.jupiter.api.DisplayNameGenerator;
 
@@ -23,6 +23,7 @@ public class HumanReadableTestNames extends DisplayNameGenerator.Standard {
   private String replaceCapitals(String name) {
     name = name.replaceAll("([A-Z])", " $1")
         .replaceAll("_", " ")
+        .replaceAll("\\$", " >")
         .replaceAll("\\s+", " ")
         .toLowerCase();
     return name;

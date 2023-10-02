@@ -1,6 +1,7 @@
 package victor.training.spring;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -9,8 +10,13 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
+import reactor.core.publisher.Mono;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -49,6 +55,18 @@ public class FluxApp {
       HttpHeaders headers = new HttpHeaders();
       headers.setLocation(URI.create("/swagger-ui.html"));
       return new ResponseEntity<>(headers, HttpStatus.FOUND);
+    }
+  }
+
+  @Slf4j
+  @Component
+  public static class RequestLogger implements WebFilter {
+    @NotNull
+    @Override
+    public Mono<Void> filter(ServerWebExchange serverWebExchange, WebFilterChain webFilterChain) {
+      log.info("▶️" + serverWebExchange.getRequest().getMethod() + " " + serverWebExchange.getRequest().getURI().getPath());
+
+      return webFilterChain.filter(serverWebExchange);
     }
   }
 }

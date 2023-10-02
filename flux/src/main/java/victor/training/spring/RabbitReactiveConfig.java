@@ -1,4 +1,4 @@
-package victor.training.spring.rabbit;
+package victor.training.spring;
 
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 import victor.training.spring.api.UC3_GetPostDetails.GetPostDetailsResponse.CommentResponse;
 import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
@@ -20,7 +21,7 @@ public class UC3_GetPostDetails {
   private final PostRepo postRepo;
   private final CommentRepo commentRepo;
 
-  public record GetPostDetailsResponse(long id, String title, String body, List<CommentResponse> comments) {
+  public record GetPostDetailsResponse(Long id, String title, String body, List<CommentResponse> comments) {
     GetPostDetailsResponse(Post post, List<CommentResponse> comments) {
       this(post.id(), post.title(), post.body(), comments);
     }
@@ -33,12 +34,13 @@ public class UC3_GetPostDetails {
   }
 
   @GetMapping("posts/{postId}")
-  public GetPostDetailsResponse getPostDetails(@PathVariable long postId) {
-    Post post = postRepo.findById(postId).orElseThrow();
-    List<CommentResponse> comments = commentRepo.findByPostId(postId).stream()
-        .map(CommentResponse::new)
-        .toList();
-    return new GetPostDetailsResponse(post, comments);
+  public Mono<GetPostDetailsResponse> getPostDetails(@PathVariable Long postId) {
+    return Mono.zip(postRepo.findById(postId),
+        commentRepo.findByPostId(postId)
+            .map(CommentResponse::new)
+            .collectList(),
+        GetPostDetailsResponse::new
+    );
   }
 
 }

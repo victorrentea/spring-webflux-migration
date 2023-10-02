@@ -36,3 +36,4 @@ logging:
     org.hibernate.SQL: DEBUG
     org.springframework.amqp.rabbit: DEBUG
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+

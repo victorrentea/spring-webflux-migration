@@ -20,6 +20,8 @@ import victor.training.spring.api.UC1_GetAllAuthors.GetAuthorsResponse;
 import victor.training.spring.api.UC2_GetAllPosts.GetPostsResponse;
 import victor.training.spring.api.UC5_CreateComment.CreateCommentRequest;
 import victor.training.spring.api.UC6_GetPostLikes;
+import victor.training.spring.util.HumanReadableTestNames;
+import victor.training.spring.util.WaitForApp;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -39,16 +41,17 @@ import static victor.training.spring.rabbit.RabbitSender.POST_CREATED_EVENT;
 @DisplayNameGeneration(HumanReadableTestNames.class)
 @SpringBootTest
 @TestMethodOrder(OrderAnnotation.class)
-public abstract class UserJourneyTest {
+public abstract class UserJourney {
 
   protected abstract String baseUrl();
 
-  public static class Web extends UserJourneyTest{
+  public static class Web extends UserJourney {
     protected String baseUrl() {
       return "http://localhost:8080/";
     }
   }
-  public static class Flux extends UserJourneyTest{
+
+  public static class Flux extends UserJourney {
     protected String baseUrl() {
       return "http://localhost:8081/";
     }
@@ -64,6 +67,10 @@ public abstract class UserJourneyTest {
   RabbitAdmin admin;
   private int initialPostsCounts;
 
+  @BeforeAll
+  public void waitForAppToStart() {
+    WaitForApp.waitForApp(baseUrl());
+  }
   @BeforeEach
   final void before() {
     rest.setErrorHandler(
@@ -140,7 +147,7 @@ public abstract class UserJourneyTest {
   @Order(17)
   void uc4_get_new_post_details_shows_initial_comment() {
     GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/" + newPostId, GetPostDetailsResponse.class);
-    assertThat(response.comments()).hasSize(1);
+    assertThat(response.comments()).describedAs(baseUrl() + "posts/" + newPostId).hasSize(1);
   }
   @Test
   @Order(18)
@@ -184,7 +191,7 @@ public abstract class UserJourneyTest {
     rabbitTemplate.convertAndSend("likes", "likes.web", event);
     rabbitTemplate.convertAndSend("likes", "likes.flux", event);
     Awaitility.await().pollDelay(ofMillis(10)).pollDelay(ofMillis(10)).timeout(ofMillis(500))
-            .until(() -> rest.getForObject(baseUrl() + "posts/1/likes", Integer.class) == 1);
+            .untilAsserted(() -> assertThat(rest.getForObject(baseUrl() + "posts/1/likes", Integer.class)).isEqualTo(1));
   }
 
   @AfterAll
