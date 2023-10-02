@@ -1,4 +1,6 @@
 
+server:
+  port: 8081
 spring:
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/postgres
@@ -21,10 +23,17 @@ spring:
     port: 5672
     username: guest
     password: guest
-
+  cloud:
+    stream:
+      bindings:
+        onLikeEvent-in-0:
+          destination: likes
+          group: flux
 logging:
+  pattern.console: "%d{HH:mm:ss.SSS} [%12.12t] %clr(${LOG_LEVEL_PATTERN:%5p}) %.20logger{20} - %msg%n"
   level:
-    org:
-      hibernate:
-        SQL: debug
-
+    org.springframework.data.mongodb.core.ReactiveMongoTemplate: DEBUG
+spring.cloud.stream.rabbit.bindings:
+  likes:
+    consumer:
+      acknowledge-mode:

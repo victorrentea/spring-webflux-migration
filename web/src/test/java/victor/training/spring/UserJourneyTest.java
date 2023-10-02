@@ -39,8 +39,21 @@ import static victor.training.spring.rabbit.RabbitSender.POST_CREATED_EVENT;
 @DisplayNameGeneration(HumanReadableTestNames.class)
 @SpringBootTest
 @TestMethodOrder(OrderAnnotation.class)
-public class UserJourneyTest {
-  public static final String BASE_URL = "http://localhost:8080/";
+public abstract class UserJourneyTest {
+
+  protected abstract String baseUrl();
+
+  public static class Web extends UserJourneyTest{
+    protected String baseUrl() {
+      return "http://localhost:8080/";
+    }
+  }
+  public static class Flux extends UserJourneyTest{
+    protected String baseUrl() {
+      return "http://localhost:8081/";
+    }
+  }
+
   public static final String NEW_COMMENT = "new text";
   // https://stackoverflow.com/questions/7952154/spring-resttemplate-how-to-enable-full-debugging-logging-of-requests-responses
   private final RestTemplate rest = new RestTemplate(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
@@ -66,23 +79,23 @@ public class UserJourneyTest {
 
   @Test
   @Order(1)
-  void get_all_authors() {
-    assertThat(rest.getForObject(BASE_URL + "authors", GetAuthorsResponse[].class))
+  void uc1_get_all_authors() {
+    assertThat(rest.getForObject(baseUrl() + "authors", GetAuthorsResponse[].class))
         .contains(new GetAuthorsResponse(1000L, "John DOE", "jdoe@example.com", "Long description"));
   }
 
   @Test
-  @Order(2)
+  @Order(1000)
   @Timeout(value = 99, unit = MILLISECONDS)
-  void get_all_authors_again_is_faster_due_to_caching() {
-    assertThat(rest.getForObject(BASE_URL + "authors", GetAuthorsResponse[].class))
+  void uc2_get_all_authors_again_is_faster_due_to_caching() {
+    assertThat(rest.getForObject(baseUrl() + "authors", GetAuthorsResponse[].class))
         .contains(new GetAuthorsResponse(1000L, "John DOE", "jdoe@example.com", "Long description"));
   }
 
   @Test
   @Order(10)
-  void get_all_posts() {
-    GetPostsResponse[] posts = rest.getForObject(BASE_URL + "posts", GetPostsResponse[].class);
+  void uc2_get_all_posts() {
+    GetPostsResponse[] posts = rest.getForObject(baseUrl() + "posts", GetPostsResponse[].class);
     initialPostsCounts = posts.length;
     assertThat(posts)
         .contains(new GetPostsResponse(1L, "Hello world!"))
@@ -91,13 +104,13 @@ public class UserJourneyTest {
 
   @Test
   @Order(11)
-  void create_post() {
+  void uc4_create_post() {
     admin.purgeQueue(POST_CREATED_EVENT); // drain the queue
 
     HttpHeaders headers = new HttpHeaders();
     headers.setBasicAuth("user", "user");
     HttpEntity<CreatePostRequest> requestEntity = new HttpEntity<>(new CreatePostRequest(createdPostTitle, "Some Body", 15L), headers);
-    rest.exchange(BASE_URL + "posts", HttpMethod.POST, requestEntity, Void.class, headers);
+    rest.exchange(baseUrl() + "posts", HttpMethod.POST, requestEntity, Void.class, headers);
 
     Message receive = rabbitTemplate.receive(POST_CREATED_EVENT, 300);
     assertThat(receive).describedAs("No message send to Rabbit").isNotNull();
@@ -106,8 +119,8 @@ public class UserJourneyTest {
 
   @Test
   @Order(12)
-  void get_post_details() {
-    GetPostDetailsResponse response = rest.getForObject(BASE_URL + "posts/1", GetPostDetailsResponse.class);
+  void uc3_get_post_details() {
+    GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/1", GetPostDetailsResponse.class);
     assertThat(response)
         .extracting(GetPostDetailsResponse::id, GetPostDetailsResponse::title, GetPostDetailsResponse::body)
         .containsExactly(1L, "Hello world!", "European Software Crafters");
@@ -116,51 +129,62 @@ public class UserJourneyTest {
   private String newPostId;
   @Test
   @Order(15)
-  void get_posts_showsNewlyCreatedOne() {
-    GetPostsResponse[] posts = rest.getForObject(BASE_URL + "posts", GetPostsResponse[].class);
-    assertThat(posts).hasSize(initialPostsCounts + 1);
+  void uc4_get_posts_showsNewlyCreatedOne() {
+    GetPostsResponse[] posts = rest.getForObject(baseUrl() + "posts", GetPostsResponse[].class);
+    assertThat(posts).describedAs("The posts after creating a new one").hasSize(initialPostsCounts + 1);
     newPostId = Arrays.stream(posts).filter(p -> p.title().equals(createdPostTitle)).findAny()
         .map(GetPostsResponse::id)
         .orElseThrow().toString();
   }
   @Test
   @Order(17)
-  void get_new_post_details_comments() {
-    GetPostDetailsResponse response = rest.getForObject(BASE_URL + "posts/" + newPostId, GetPostDetailsResponse.class);
+  void uc4_get_new_post_details_shows_initial_comment() {
+    GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/" + newPostId, GetPostDetailsResponse.class);
     assertThat(response.comments()).hasSize(1);
+  }
+  @Test
+  @Order(18)
+  void uc4_get_new_post_details_showsLoggedInUser_in_comment() {
+    GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/" + newPostId, GetPostDetailsResponse.class);
     assertThat(response.comments().get(0).name()).isEqualTo("user");
   }
 
   @Test
   @Order(21)
-  void create_comment() {
-    rest.postForObject(BASE_URL + "posts/1/comments", new CreateCommentRequest(NEW_COMMENT, "troll"), Void.class);
+  void uc5_create_comment() {
+    rest.postForObject(baseUrl() + "posts/1/comments", new CreateCommentRequest(NEW_COMMENT, "troll"), Void.class);
   }
 
   @Test
   @Order(22)
-  void get_post_by_id_shows_new_comment() {
-    GetPostDetailsResponse response = rest.getForObject(BASE_URL + "posts/1", GetPostDetailsResponse.class);
+  void uc5_get_post_by_id_shows_new_comment() {
+    GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/1", GetPostDetailsResponse.class);
     assertThat(response.comments())
         .contains(new GetPostDetailsResponse.CommentResponse(NEW_COMMENT, "troll"));
   }
 
   @Test
   @Order(23)
-  void create_comment_fails_for_locked_post() {
-    assertThatThrownBy(() -> rest.postForObject(BASE_URL + "posts/2/comments", new CreateCommentRequest(NEW_COMMENT, "u"), Void.class))
+  void uc5_create_comment_fails_for_locked_post() {
+    assertThatThrownBy(() -> rest.postForObject(baseUrl() + "posts/2/comments", new CreateCommentRequest(NEW_COMMENT, "u"), Void.class))
         .hasMessageContaining("Comment Rejected");
   }
 
+  @Test
+  @Order(23)
+  void uc5_create_comment_fails_for_nonexisting_postId() {
+    assertThatThrownBy(() -> rest.postForObject(baseUrl() + "posts/119142/comments",new CreateCommentRequest(NEW_COMMENT, "troll"), Void.class));
+  }
 
 
   @Test
   @Order(30)
-  void getPostLikes() {
+  void uc6_getPostLikes() {
     UC6_GetPostLikes.LikeEvent event = new UC6_GetPostLikes.LikeEvent(1L, 1);
-    rabbitTemplate.convertAndSend("likes", "likes.app", event);
-    Awaitility.await().pollDelay(ofMillis(100)).pollDelay(ofMillis(50)).timeout(ofMillis(500))
-            .until(() -> rest.getForObject(BASE_URL + "posts/1/likes", Integer.class) == 1);
+    rabbitTemplate.convertAndSend("likes", "likes.web", event);
+    rabbitTemplate.convertAndSend("likes", "likes.flux", event);
+    Awaitility.await().pollDelay(ofMillis(10)).pollDelay(ofMillis(10)).timeout(ofMillis(500))
+            .until(() -> rest.getForObject(baseUrl() + "posts/1/likes", Integer.class) == 1);
   }
 
   @AfterAll
