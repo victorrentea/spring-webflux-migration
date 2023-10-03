@@ -27,13 +27,11 @@ public class UC5_CreateComment {
   @PostMapping("posts/{postId}/comments")
   public Mono<Comment> createComment(@PathVariable long postId, @RequestBody CreateCommentRequest request) {
     return postRepo.findById(postId)
+        .filterWhen(post -> isSafe(post.body(), request.comment()))
+        .filterWhen(post -> isUnlocked(post.authorId()))
         .single()
-        .flatMap(post -> Mono.zip(
-                isSafe(post.body(), request.comment()),
-                isUnlocked(post.authorId()), Boolean::logicalAnd)
-            .filter(b -> b)
-            .switchIfEmpty(Mono.error(new IllegalArgumentException("Comment Rejected")))
-            .flatMap(b -> commentRepo.save(new Comment(post.id(), request.comment(), request.name()))));
+        .map(post -> new Comment(post.id(), request.comment(), request.name()))
+        .flatMap(commentRepo::save);
   }
 
 

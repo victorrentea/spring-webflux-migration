@@ -17,5 +17,9 @@ public class Post {
   private String body;
   private Long authorId; 
   private LocalDateTime createdAt = now();
+
+  public Long getId() {
+      return id;
+  }
 }
 

@@ -39,16 +39,13 @@ public class UC4_CreatePost {
   @PostMapping("posts")
   @PreAuthorize("isAuthenticated()")
   @Transactional
-  public Mono<Void> createPost(@RequestBody CreatePostRequest request) {
+  public Mono<Long> createPost(@RequestBody CreatePostRequest request) {
     return postRepo.save(request.toPost())
         .delayUntil(post -> sendPostCreatedEvent("Post created: " + post.id())
             .onErrorResume(e->Mono.empty()))
-        .flatMap(post -> createInitialComment(post.id(), request.title()))
-        .flatMap(commentRepo::save)
-
-        //TODO return ID @Paul
-        //TODO parallel faster
-        .then()
+        .delayUntil(post -> createInitialComment(post.id(), request.title())
+            .flatMap(commentRepo::save))
+        .map(Post::getId)
         ;
   }
 
