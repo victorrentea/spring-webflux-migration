@@ -41,10 +41,12 @@ public class UC4_CreatePost {
   @Transactional
   public Mono<Long> createPost(@RequestBody CreatePostRequest request) {
     return postRepo.save(request.toPost())
-        .delayUntil(post -> sendPostCreatedEvent("Post created: " + post.id())
-            .onErrorResume(e->Mono.empty()))
-        .delayUntil(post -> createInitialComment(post.id(), request.title())
-            .flatMap(commentRepo::save))
+        .delayUntil(post -> Mono.zip( // in parallel
+            sendPostCreatedEvent("Post created: " + post.id())
+                .onErrorResume(e -> Mono.empty())
+                .thenReturn(42), // not empty please
+            createInitialComment(post.id(), request.title())
+                .flatMap(commentRepo::save)).then())
         .map(Post::getId)
         ;
   }
@@ -57,11 +59,13 @@ public class UC4_CreatePost {
   }
 
   private final RabbitTemplate rabbitTemplate;
+
   private Mono<Void> sendPostCreatedEvent(String message) {
     log.info("Sending message: " + message);
     OutboundMessage outboundMessage = new OutboundMessage("", "post-created-event", message.getBytes());
     return radioactiveRabbit.sendWithPublishConfirms(Mono.just(outboundMessage), new SendOptions())
         .then();
   }
+
   private final Sender radioactiveRabbit;
 }
