@@ -9,11 +9,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import victor.training.spring.sql.Post;
+import victor.training.spring.sql.PostRepo;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Slf4j
 @RestController
@@ -28,13 +31,17 @@ public class UC6_GetPostLikes {
 
   public record LikeEvent(long postId, int likes) {
   }
-
+private final PostRepo postRepo;
   @Bean
-  public Consumer<Flux<LikeEvent>> onLikeEvent() {
+  public Function<Flux<LikeEvent>, Flux<LikedPosts>> onLikeEvent() {
     return flux -> flux
         .doOnNext(event -> postLikes.put(event.postId(), event.likes()))
         .doOnNext(event -> eventSink.tryEmitNext(event))
-        .subscribe();
+        .map(LikeEvent::postId)
+        .buffer(Duration.ofSeconds(1))
+        .flatMap(ids -> postRepo.findAllById(ids).map(Post::title).collectList())
+        .map(LikedPosts::new)
+        .doOnNext(message -> log.info("Sending " + message));
   }
   // TODO every 1 second emit titles of recently liked posts. Hard: keep listening despite failed messages
   public record LikedPosts(Collection<String> titles) {
