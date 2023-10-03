@@ -50,9 +50,12 @@ public class UC1_GetAllAuthors {
     private final WebClient webClient;
     @Cacheable("contact-email")
     public Mono<String> fetchEmail(long authorId) {
-      log.info("Retrieving email for author {}", authorId);
       String uri = "http://localhost:9999/contact/" + authorId + "/email";
-      return webClient.get().uri(uri).retrieve().bodyToMono(String.class);
+      return webClient.get().uri(uri).retrieve().bodyToMono(String.class)
+          .doOnSubscribe(s -> log.info("Retrieving email for author {}", authorId))
+          .doOnNext(e -> log.info("Got response " + e))
+          .cache() // i'm gonna cache a cached mono!
+          ;
     }
   }
 }
