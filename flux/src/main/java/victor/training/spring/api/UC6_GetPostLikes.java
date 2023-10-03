@@ -29,7 +29,7 @@ public class UC6_GetPostLikes {
     return postLikes.getOrDefault(postId, 0);
   }
 
-  public record LikeEvent(long postId, int likes) {
+  public record LikeEvent(Long postId, int likes) {
   }
 private final PostRepo postRepo;
   @Bean
@@ -41,7 +41,8 @@ private final PostRepo postRepo;
         .buffer(Duration.ofSeconds(1))
         .flatMap(ids -> postRepo.findAllById(ids).map(Post::title).collectList())
         .map(LikedPosts::new)
-        .doOnNext(message -> log.info("Sending " + message));
+        .onErrorContinue((exception, element) -> log.error("Pretend nothing happened, to NOT disconnect from Rabbit "+exception.getMessage()+ " " + element))
+        .doOnNext(message -> log.info("Sending: " + message));
   }
   // TODO every 1 second emit titles of recently liked posts. Hard: keep listening despite failed messages
   public record LikedPosts(Collection<String> titles) {
