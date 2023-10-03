@@ -21,6 +21,7 @@ public class UC2_GetAllPosts {
     }
   }
   @GetMapping("posts")
+  // Reactive would allow to send millions to client (not BRO')
   public Flux<GetPostsResponse> getAllPosts() {
     return postRepo.findAll().map(GetPostsResponse::new);
   }
