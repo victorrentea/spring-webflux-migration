@@ -27,7 +27,12 @@ public class UC5_CreateComment {
 
   @PostMapping("posts/{postId}/comments")
   public Mono<Comment> createComment(@PathVariable long postId, @RequestBody CreateCommentRequest request) {
-    Mono<Post> postMono = postRepo.findById(postId).single();
+    Mono<Post> postMono = postRepo.findById(postId)
+        .single()
+
+        .cache();
+    // there are 3 downstream operators subscribing to postMono variable.
+    // but the cache op does not subscribe above (to .single()) more than once
 
     Mono<Boolean> safeMono = postMono.flatMap(post -> isSafe(post.body(), request.comment()));
     Mono<Boolean> unlockedMono = postMono.flatMap(post -> isUnlocked(post.authorId()));
@@ -35,16 +40,13 @@ public class UC5_CreateComment {
     Mono<Boolean> monoSafeToSave = Mono.zip(safeMono, unlockedMono, (a, b) -> a && b);
 
     // the followin mono is empty(if b==false) or not empty (true)
-    Mono<Boolean> bMono = monoSafeToSave.filter(b->b)
+    Mono<Boolean> bMono = monoSafeToSave.filter(b -> b)
         .switchIfEmpty(Mono.error(new IllegalArgumentException("Comment Rejected")));
 
     return Mono.zip(postMono, bMono, (post, b) ->
-        commentRepo.save(new Comment(post.id(), request.comment(), request.name())))
-        .flatMap(m->m);
+            commentRepo.save(new Comment(post.id(), request.comment(), request.name())))
+        .flatMap(m -> m);
   }
-
-
-
 
 
   private Mono<Boolean> isUnlocked(long authorId) {

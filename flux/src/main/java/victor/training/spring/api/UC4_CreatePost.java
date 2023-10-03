@@ -45,6 +45,9 @@ public class UC4_CreatePost {
             .onErrorResume(e->Mono.empty()))
         .flatMap(post -> createInitialComment(post.id(), request.title()))
         .flatMap(commentRepo::save)
+
+        //TODO return ID @Paul
+        //TODO parallel faster
         .then()
         ;
   }
