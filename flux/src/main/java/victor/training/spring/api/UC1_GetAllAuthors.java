@@ -24,7 +24,8 @@ public class UC1_GetAllAuthors {
   public void insertInitialDataInMongo() {
     log.info("Insert in Mongo");
     // legal at startup, blocking MQ listener, @Scheduled
-    authorRepo.save(new Author(1000L, "John DOE", "Long description")).block();
+    Author author = new Author(1000L, "John DOE", "Long description");
+    authorRepo.save(author).block();
   }
 
   public record GetAuthorsResponse(long id, String name, String email, String bio) {

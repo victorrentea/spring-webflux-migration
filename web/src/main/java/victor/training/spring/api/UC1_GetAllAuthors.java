@@ -24,7 +24,8 @@ public class UC1_GetAllAuthors {
   @PostConstruct
   public void insertInitialDataInMongo() {
     log.info("Insert in Mongo");
-    authorRepo.save(new Author(1000L, "John DOE", "Long description"));
+    Author author = new Author(1000L, "John DOE", "Long description");
+    authorRepo.save(author);
   }
 
   public record GetAuthorsResponse(long id, String name, String email, String bio) {
