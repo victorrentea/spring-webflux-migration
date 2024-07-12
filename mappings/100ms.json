@@ -1,0 +1,14 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/100ms/*"
+  },
+  "response": {
+    "status": 200,
+    "body" : "OK",
+    "headers": {
+      "Content-Type": "text/plain"
+    },
+    "fixedDelayMilliseconds": 100
+  }
+}

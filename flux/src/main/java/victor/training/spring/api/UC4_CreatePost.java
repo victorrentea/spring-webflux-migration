@@ -3,9 +3,6 @@ package victor.training.spring.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,8 +15,6 @@ import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
 import victor.training.spring.sql.Post;
 import victor.training.spring.sql.PostRepo;
-
-import java.security.Principal;
 
 import static java.time.LocalDateTime.now;
 
@@ -37,7 +32,7 @@ public class UC4_CreatePost {
   }
 
   @PostMapping("posts")
-  @PreAuthorize("isAuthenticated()")
+//  @PreAuthorize("isAuthenticated()")
   @Transactional
   public Mono<Long> createPost(@RequestBody CreatePostRequest request) {
     return postRepo.save(request.toPost())
@@ -52,9 +47,11 @@ public class UC4_CreatePost {
   }
 
   private static Mono<Comment> createInitialComment(long postId, String postTitle) {
-    return ReactiveSecurityContextHolder.getContext()
-        .map(SecurityContext::getAuthentication)
-        .map(Principal::getName)
+//    return ReactiveSecurityContextHolder.getContext()
+//        .map(SecurityContext::getAuthentication)
+//        .map(Principal::getName)
+//        .map(loggedInUser -> new Comment(postId, "Posted on " + now() + ": " + postTitle, loggedInUser));
+    return Mono.just("victor")
         .map(loggedInUser -> new Comment(postId, "Posted on " + now() + ": " + postTitle, loggedInUser));
   }
 

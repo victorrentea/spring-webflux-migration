@@ -15,6 +15,9 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>completable</module>
+        <module>tests</module>
+        <module>virtual</module>
         <module>web</module>
         <module>flux</module>
     </modules>
@@ -25,10 +28,10 @@
     </properties>
 
     <dependencies>
-        <dependency>
+        <!--<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

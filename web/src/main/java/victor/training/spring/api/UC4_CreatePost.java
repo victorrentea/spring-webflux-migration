@@ -3,8 +3,6 @@ package victor.training.spring.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,7 +28,7 @@ public class UC4_CreatePost {
   }
 
   @PostMapping("posts")
-  @PreAuthorize("isAuthenticated()")
+//  @PreAuthorize("isAuthenticated()")
   @Transactional
   public void createPost(@RequestBody CreatePostRequest request) {
     Post post = postRepo.save(request.toPost());
@@ -40,7 +38,8 @@ public class UC4_CreatePost {
   // TODO triangle
 
   private static Comment createInitialComment(long postId, String postTitle) {
-    String loggedInUser = SecurityContextHolder.getContext().getAuthentication().getName();
+//    String loggedInUser = SecurityContextHolder.getContext().getAuthentication().getName();
+    String loggedInUser = "victor";
     return new Comment(postId, "Posted on " + now() + ": " + postTitle, loggedInUser);
   }
 
