@@ -12,7 +12,7 @@ public class Api {
 
   @GetMapping
   public String method() throws InterruptedException {
-    Thread.sleep(100);
+    Thread.sleep(500);
     return "Here in " + Thread.currentThread().isVirtual();
   }
 }
