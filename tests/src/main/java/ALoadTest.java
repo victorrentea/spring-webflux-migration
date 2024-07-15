@@ -11,8 +11,8 @@ public class ALoadTest extends Simulation {
   }
 
   {
-    setUp(scenario(getClass().getSimpleName()).exec(http("").get("/a"))
-            .injectClosed(constantConcurrentUsers(200).during(ofSeconds(5))))
-            .protocols(http.baseUrl("http://localhost:8080"));
+    setUp(scenario(getClass().getSimpleName()).exec(http("").get("/"))
+            .injectClosed(constantConcurrentUsers(180).during(ofSeconds(5))))
+            .protocols(http.baseUrl("http://localhost:8081"));
   }
 }
