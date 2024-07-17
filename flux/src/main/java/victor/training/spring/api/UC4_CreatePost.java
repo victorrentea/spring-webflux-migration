@@ -64,7 +64,7 @@ public class UC4_CreatePost {
 
   private Mono<Post> f(CreatePostRequest request) {
     return postRepo.save(request.toPost())
-        .delayUntil(e->Mono.deferContextual(context -> System.out.println("User " + context.get("userId"))));
+        /*.delayUntil(e->Mono.deferContextual(context -> System.out.println("User " + context.get("userId"))))*/;
 
   }
 
