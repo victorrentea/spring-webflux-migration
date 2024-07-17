@@ -12,12 +12,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import victor.training.spring.mongo.Author;
 import victor.training.spring.mongo.AuthorRepo;
+import victor.training.spring.sql.CommentHibernateRepo;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 public class UC1_GetAllAuthors {
-  private final AuthorRepo authorRepo; // MongoDB
+  private final AuthorRepo authorReactiveRepo; // MongoDB
+  private final CommentHibernateRepo commentBlocantRepo; // MongoDB
   private final ContactApi contactApi;
 
   @PostConstruct
@@ -25,7 +27,7 @@ public class UC1_GetAllAuthors {
     log.info("Insert in Mongo");
     // legal at startup, blocking MQ listener, @Scheduled
     Author author = new Author(1000L, "John DOE", "Long description");
-    authorRepo.save(author).block();
+    authorReactiveRepo.save(author).block();
   }
 
   public record GetAuthorsResponse(long id, String name, String email, String bio) {
@@ -35,8 +37,18 @@ public class UC1_GetAllAuthors {
   }
   @GetMapping("authors")
   public Flux<GetAuthorsResponse> getAllAuthors() {
-     return authorRepo.findAll()
+
+    // ma incapatzanez sa lucrez cu Hibernate in app webflux
+    // ne pacalim singuri: tot blochezi threadul
+//    Flux<Comment> all = Flux.fromIterable(commentBlocantRepo.findAll());
+//    Schedulers.boundedElastic() // 10 x CPU
+//    Mono.fromSupplier(()->commentBlocantRepo.findAll())
+//        .flatMapMany(Flux::fromIterable)
+//        ;
+
+    return authorReactiveRepo.findAll()
         .flatMap(this::toDto);
+//        .flatMap(this::toDto);
   }
 
   private Mono<GetAuthorsResponse> toDto(Author author) {

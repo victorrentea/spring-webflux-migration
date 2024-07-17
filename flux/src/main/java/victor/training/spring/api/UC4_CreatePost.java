@@ -40,16 +40,40 @@ public class UC4_CreatePost {
   @PreAuthorize("isAuthenticated()")
   @Transactional
   public Mono<Long> createPost(@RequestBody CreatePostRequest request) {
-    return postRepo.save(request.toPost())
-        .delayUntil(post -> Mono.zip( // in parallel
-            sendPostCreatedEvent("Post created: " + post.id())
-                .onErrorResume(e -> Mono.empty())
-                .thenReturn(42), // not empty please
-            createInitialComment(post.id(), request.title())
-                .flatMap(commentRepo::save)).then())
+//    postRepo.save(request.toPost()); // daca nimeni nu e chaineuit
+    // la un ❄️COLD Mono/Flux nimic nu se intampla
+    // nu se face SAVE!!!!
+
+//    postRepo.save(request.toPost()).block(); blocant
+    return f(request)
         .map(Post::getId)
+//        .contextWrite(c->c.put("userId", at.get))
         ;
+//    return postRepo.save(request.toPost())
+//        .delayUntil(post -> Mono.zip( // in parallel
+//            sendPostCreatedEvent("Post created: " + post.id())
+//                .doOnError(e -> log.error("VALEU:", e))
+//                .onErrorResume(e -> Mono.empty()) // ignora eroarea ❌ => |
+//                .thenReturn(42), // not empty please
+//            createInitialComment(post.id(), request.title())
+//                .flatMap(commentRepo::save))
+//            .then())
+//        .map(Post::getId)
+//        ;
   }
+
+  private Mono<Post> f(CreatePostRequest request) {
+    return postRepo.save(request.toPost())
+        .delayUntil(e->Mono.deferContextual(context -> System.out.println("User " + context.get("userId"))));
+
+  }
+
+  // ce alte entry pointuri mai pot executa cod in app voastra in afara de REST?
+  // - @GetMapping, gRPC <<<  Spring subscrie
+  // - @KafkaLIstener/Rabbit/activeMQ... > e bine sa faci .block
+  // - @PostConstruct, @EventListener, implements CommandLineRunner .block
+  // - @Scheduler .block ca sa nu bata din nou
+  // - main() pot #sieu
 
   private static Mono<Comment> createInitialComment(long postId, String postTitle) {
     return ReactiveSecurityContextHolder.getContext()

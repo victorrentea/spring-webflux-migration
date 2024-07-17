@@ -47,9 +47,7 @@ private final PostRepo postRepo;
   // TODO every 1 second emit titles of recently liked posts. Hard: keep listening despite failed messages
   public record LikedPosts(Collection<String> titles) {
   }
-
   Sinks.Many<LikeEvent> eventSink = Sinks.many().multicast().directBestEffort();
-
   // TODO push live likes to browser for UX❤️ http://localhost:8081/posts/2/likes-live
   @GetMapping(value = "posts/{postId}/likes-live", produces = "text/event-stream")
   public Flux<Integer> getPostLikesLive(@PathVariable long postId) {
