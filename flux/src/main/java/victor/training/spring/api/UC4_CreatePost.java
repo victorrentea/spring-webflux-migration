@@ -36,9 +36,9 @@ public class UC4_CreatePost {
   @Transactional
   public Mono<Void> createPost(@RequestBody CreatePostRequest request) {
     return postRepo.save(request.toPost())
-        .flatMap(p ->
-            commentRepo.save(createInitialComment(p.id(), request.title()))
-                .then(sendPostCreatedEvent("Post created: " + p.id())));
+        .flatMap(p -> Mono.zip(
+            commentRepo.save(createInitialComment(p.id(), request.title())),
+            sendPostCreatedEvent("Post created: " + p.id()), (a,b)->b));
   }
 
   private static Comment createInitialComment(long postId, String postTitle) {
