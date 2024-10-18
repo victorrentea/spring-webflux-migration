@@ -135,6 +135,12 @@ public abstract class UserJourney {
   }
 
   @Test
+  @Order(13)
+  void uc3_get_post_details_fails_for_bad_id() {
+    assertThatThrownBy(()-> rest.getForObject(baseUrl() + "posts/99999",
+        GetPostDetailsResponse.class));
+  }
+  @Test
   @Order(14)
   void uc3_get_post_details() {
     GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/1", GetPostDetailsResponse.class);
