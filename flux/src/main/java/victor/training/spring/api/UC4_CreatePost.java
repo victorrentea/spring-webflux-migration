@@ -3,7 +3,7 @@ package victor.training.spring.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +24,7 @@ import static java.time.LocalDateTime.now;
 public class UC4_CreatePost {
   private final PostRepo postRepo;
   private final CommentRepo commentRepo;
+  private final Sender rabbitSender;
 
   public record CreatePostRequest(String title, String body, Long authorId) {
     Post toPost() {
@@ -35,25 +36,31 @@ public class UC4_CreatePost {
   @PreAuthorize("isAuthenticated()")
   @Transactional
   public Mono<Void> createPost(@RequestBody CreatePostRequest request) {
-    return postRepo.save(request.toPost())
-        .flatMap(p -> Mono.zip(
-                // Mono.zip(...,functionReturingMonoVoid()) is BAD!
-                commentRepo.save(createInitialComment(p.id(), request.title())),
-                sendPostCreatedEvent("Post created: " + p.id()).thenReturn(1),
-                (a, b) -> b)
-            .then());
+    Mono<Post> postMono = postRepo.save(request.toPost());
+    return postMono.flatMap(post -> Mono.zip(
+                createInitialComment(post.id(), request.title()).flatMap(commentRepo::save),
+                sendPostCreatedEvent("Post created: " + post.id()).thenReturn(1)
+            )
+        )
+        .then()
+        .contextWrite(context -> context.put("market", "NL")); // a web filter in spring/ security
   }
 
-  private static Comment createInitialComment(long postId, String postTitle) {
-    String loggedInUser = SecurityContextHolder.getContext().getAuthentication().getName();
-    return new Comment(postId, "Posted on " + now() + ": " + postTitle, loggedInUser);
+  private static Mono<Comment> createInitialComment(Long postId, String postTitle) {
+//    SecurityContextHolder.getContext()// in non-webflux
+//    SecurityUtil.
+    return ReactiveSecurityContextHolder.getContext()
+        .map(context -> context.getAuthentication().getName())
+        .map(loggedInUser -> new Comment(postId, "Posted on " + now() + ": " + postTitle, loggedInUser));
   }
-
-  private final Sender sender;
 
   public Mono<Void> sendPostCreatedEvent(String message) {
     log.info("Sending message: " + message);
     OutboundMessage outboundMessage = new OutboundMessage("", "post-created-event", message.getBytes());
-    return sender.sendWithPublishConfirms(Mono.just(outboundMessage)).then();
+    return rabbitSender.sendWithPublishConfirms(Mono.just(outboundMessage)).then()
+        .delayUntil(e-> Mono.deferContextual(reactorContext ->
+            Mono.fromRunnable(() -> {
+              System.out.println("Metadata: " + reactorContext.get("market"));
+            })));
   }
 }
