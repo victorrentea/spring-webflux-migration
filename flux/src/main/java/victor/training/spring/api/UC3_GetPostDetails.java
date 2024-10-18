@@ -29,11 +29,11 @@ public class UC3_GetPostDetails {
     // - you are not allowed to throw exceptions, only return .error(new Exception)
     // - you are not allowed to block in NETWORK/IO
     return postRepo.findById(postId)
-        .switchIfEmpty(Mono.error(()->new IllegalArgumentException("Post not found")))
-        .flatMap(post -> commentRepo.findByPostId(postId)
-            .map(CommentResponse::new)
-            .collectList()
-            .map(comments -> new GetPostDetailsResponse(post, comments)));
+        .switchIfEmpty(Mono.error(() -> new IllegalArgumentException("Post not found")))
+        .zipWith(commentRepo.findByPostId(postId)
+                .map(CommentResponse::new)
+                .collectList(),
+            (post, comments) -> new GetPostDetailsResponse(post, comments));
   }
 
   public record GetPostDetailsResponse(long id, String title, String body, List<CommentResponse> comments) {
