@@ -8,11 +8,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import victor.training.spring.mongo.Author;
 import victor.training.spring.mongo.AuthorRepo;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -35,26 +34,25 @@ public class UC1_GetAllAuthors {
     }
   }
   @GetMapping("authors")
-  public List<GetAuthorsResponse> getAllAuthors() {
-    return authorRepo.findAll().toStream()
-        .map(author -> new GetAuthorsResponse(author, contactApi.fetchEmail(author.id())))
-        .collect(Collectors.toList());
+  public Flux<GetAuthorsResponse> getAllAuthors() {
+    return authorRepo.findAll()
+        .concatMap(author -> contactApi.fetchEmail(author.id())
+            .map(email -> new GetAuthorsResponse(author,email))); // 1 request at a time to contactApi
+//        .flatMap(...., 4); // faster, with 4 calls to contactApi in parallel
   }
-  // TODO how many calls in parallel?
-
   @Component
   @RequiredArgsConstructor
   public static class ContactApi {
     private final WebClient webClient;
     @Cacheable("contact-email")
-    public String fetchEmail(long authorId) {
+    public Mono<String> fetchEmail(long authorId) {
       log.info("Retrieving email for author {}", authorId);
       String uri = "http://localhost:9999/contact/" + authorId + "/email";
 //      return restTemplate.getForObject(uri, String.class);
+//          .uri("http://localhost:9999/contact/{}/email",authorId) // better
       return webClient.get()
           .uri(uri)
-//          .uri("http://localhost:9999/contact/{}/email",authorId) // better
-          .retrieve().bodyToMono(String.class).block();
+          .retrieve().bodyToMono(String.class);
     }
   }
 }
