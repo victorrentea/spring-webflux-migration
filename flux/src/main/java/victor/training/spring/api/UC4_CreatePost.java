@@ -59,4 +59,11 @@ public class UC4_CreatePost {
     return sender.sendWithPublishConfirms(Mono.just(outboundMessage)).then();
   }
 
+  // to propagate security context in a fire-and-forget flow, use:
+  // ReactiveSecurityContextHolder.doOnNext(parentSecurityContext ->
+  //     callToRunSeparate()
+  //        .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(just(parentSecurity)))
+  //        .subscribe()
+  // );
+
 }
