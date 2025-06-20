@@ -65,13 +65,5 @@ public class WebApp {
   public RouterFunction<ServerResponse> composedRoutes() {
     return route(GET("/"), req -> temporaryRedirect(URI.create("/swagger-ui.html")).build());
   }
-  @Slf4j
-  @Component
-  public static class RequestLogger extends HttpFilter {
-    @Override
-    protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-      log.info("▶️" + request.getMethod() + " " + request.getRequestURI() + " 👉 " + request.getHeader("test-name"));
-      chain.doFilter(request, response);
-    }
-  }
+
 }
