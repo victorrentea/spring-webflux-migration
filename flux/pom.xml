@@ -42,6 +42,12 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-stream-binder-rabbit</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-function-context</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

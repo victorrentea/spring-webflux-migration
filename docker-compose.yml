@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres
@@ -14,6 +12,8 @@ services:
     hostname: mongo
     ports:
       - "27017:27017"
+    volumes:
+      - mongo_data:/data/db  # nume valid
 
   rabbit:
     image: rabbitmq:3-management #has the management plugin preinstalled
@@ -28,3 +28,5 @@ services:
     command: --async-response-enabled=true
     ports:
       - "9999:8080"
+volumes:
+  mongo_data:
