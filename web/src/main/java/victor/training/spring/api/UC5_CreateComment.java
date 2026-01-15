@@ -1,6 +1,7 @@
 package victor.training.spring.api;
 
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,7 @@ public class UC5_CreateComment {
   private final PostRepo postRepo;
   private final CommentRepo commentRepo;
   private final RestTemplate restTemplate;
+  private final MeterRegistry meterRegistry;
 
   public record CreateCommentRequest(String comment, String name) {
   }
@@ -46,7 +48,8 @@ public class UC5_CreateComment {
     record Request(String body, String comment) {
     }
     String url = "http://localhost:9999/safety-check";
-    String result = restTemplate.postForObject(url, new Request(postBody, comment), String.class);
+    String result = meterRegistry.timer("isCommentSafe")
+        .record(() -> restTemplate.postForObject(url, new Request(postBody, comment), String.class));
     return "OK".equals(result);
   }
 }

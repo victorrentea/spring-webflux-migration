@@ -1,12 +1,10 @@
 package victor.training.spring.api;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.observability.micrometer.Micrometer;
 import reactor.core.publisher.Mono;
 import victor.training.spring.api.UC3_GetPostDetails.GetPostDetailsResponse.CommentResponse;
 import victor.training.spring.sql.Comment;
@@ -22,7 +20,6 @@ import java.util.List;
 public class UC3_GetPostDetails {
   private final PostRepo postRepo;
   private final CommentRepo commentRepo;
-  private final MeterRegistry meterRegistry;
 
   public record GetPostDetailsResponse(long id, String title, String body, List<CommentResponse> comments) {
     GetPostDetailsResponse(Post post, List<CommentResponse> comments) {
@@ -41,8 +38,6 @@ public class UC3_GetPostDetails {
     return Mono.zip(
         postRepo.findById(postId),
         commentRepo.findByPostId(postId)
-            .name("findCommentsByPostId")
-            .tap(Micrometer.metrics(meterRegistry))
             .map(CommentResponse::new)
             .collectList(),
         GetPostDetailsResponse::new);
