@@ -12,7 +12,6 @@ import victor.training.spring.mongo.Author;
 import victor.training.spring.mongo.AuthorRepo;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -34,7 +33,10 @@ public class UC1_GetAllAuthors {
   }
   @GetMapping("authors")
   public List<GetAuthorsResponse> getAllAuthors() {
-    return authorRepo.findAll().stream().map(author -> new GetAuthorsResponse(author, contactApi.fetchEmail(author.id()))).collect(Collectors.toList());
+    return authorRepo.findAll().stream()
+        .map(author -> new GetAuthorsResponse(author,
+            contactApi.fetchEmail(author.id())))
+        .toList();
   }
   // TODO how many calls in parallel?
 
@@ -42,6 +44,7 @@ public class UC1_GetAllAuthors {
   @RequiredArgsConstructor
   public static class ContactApi {
     private final RestTemplate restTemplate;
+    // TODO migrate to RestClient
     @Cacheable("contact-email")
     public String fetchEmail(long authorId) {
       log.info("Retrieving email for author {}", authorId);
