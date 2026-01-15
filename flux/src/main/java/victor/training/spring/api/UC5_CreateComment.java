@@ -47,12 +47,20 @@ public class UC5_CreateComment {
   }
 
   private Mono<Boolean> authorAllowsComments(long authorId) {
-    String url = "http://localhost:9999/author/" + authorId + "/comments-allowed";
+    String url = "http://localhost:9999/authoasdsadasdasr/" + authorId + "/comments-allowed";
+//    Hooks.onOperatorDebug(); // SUPER EXPENSIVE, only for desperate debugging.
+
     Mono<String> result = webClient.get()
         .uri(url)
         .retrieve()
         .bodyToMono(String.class)
-        .checkpoint("isCommentUnlocked");
+
+//        .doOnSubscribe()
+//        .log
+//        .checkpoint("isCommentUnlocked",// printed next to any exception ABOVE
+//            true)
+        ;  // EXPENSIVE CPU, stacktrace captured at chain ASSEMBLY, not at actual execution
+    // stacktraces of exceptions in reactive chains don't include the method that CREATED the chain/any callers
     return result.map(Boolean::parseBoolean);
   }
 
@@ -66,8 +74,9 @@ public class UC5_CreateComment {
         .retrieve()
         .bodyToMono(String.class)
 
-        .name("isCommentSafe")
-        .tap(Micrometer.metrics(meterRegistry));
+        .name("isCommentSafe") // you canfind this /actuator/prometheus
+//        first metric = Δt between subscribe-->complete
+        .tap(Micrometer.metrics(meterRegistry)); // replacement of @Timed
     return result.map("OK"::equals);
   }
 }
