@@ -49,7 +49,7 @@ public class UC5_CreateComment {
   private boolean isSafe(String postBody, String comment) {
     record Request(String body, String comment) {
     }
-    String result = meterRegistry.timer("isCommentSafe")
+    String result = meterRegistry.timer("isCommentSafe") // exposed via /actuator/prometheus
         .record(() -> restClient.post()
             .uri("http://localhost:9999/safety-check")
             .body(new Request(postBody, comment))

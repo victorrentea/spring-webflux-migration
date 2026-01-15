@@ -15,6 +15,8 @@ import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
 import victor.training.spring.sql.PostRepo;
 
+import java.util.NoSuchElementException;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class UC5_CreateComment {
   @PostMapping("posts/{postId}/comments")
   public Mono<Void> createComment(@PathVariable long postId, @RequestBody CreateCommentRequest request) {
     return postRepo.findById(postId)
-        .switchIfEmpty(Mono.error(new IllegalArgumentException("Post not found")))
+        .switchIfEmpty(Mono.error(new NoSuchElementException()))
         .filterWhen(post -> Mono.zip(
             isUnlocked(post.authorId()),
             isSafe(post.body(), request.comment()),
@@ -59,7 +61,7 @@ public class UC5_CreateComment {
         .retrieve()
         .bodyToMono(String.class)
 
-        .name("isCommentSafe")
+        .name("isCommentSafe") // exposed via /actuator/prometheus
         .tap(Micrometer.metrics(meterRegistry));
     return result.map("OK"::equals);
   }

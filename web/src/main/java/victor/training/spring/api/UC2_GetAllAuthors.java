@@ -41,7 +41,7 @@ public class UC2_GetAllAuthors {
   @RequiredArgsConstructor
   public static class ContactApi {
     private final RestClient restClient;
-    @Cacheable("contact-email")
+    @Cacheable("contact-email-cache")
     public String fetchEmail(long authorId) {
       log.info("Retrieving email for author {}", authorId);
       return restClient.get()

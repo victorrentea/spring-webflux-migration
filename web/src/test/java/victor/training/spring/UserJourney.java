@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
+import static java.lang.System.currentTimeMillis;
 import static java.time.Duration.ofMillis;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -113,15 +114,15 @@ public abstract class UserJourney {
   }
 
   @Test
-  @Order(100)
-  @Timeout(value = 99, unit = MILLISECONDS)
+  @Order(20)
+  @Timeout(value = 50, unit = MILLISECONDS)
   void uc2_get_all_authors_again_is_faster_due_to_caching() {
     assertThat(rest.getForObject(baseUrl() + "authors", GetAuthorsResponse[].class))
         .contains(new GetAuthorsResponse(1000L, "John DOE", "jdoe@example.com", "Long description"));
   }
 
   @Test
-  @Order(11)
+  @Order(30)
   void uc4_create_post() {
     admin.purgeQueue("post-created-event"); // drain the queue
 
@@ -135,7 +136,7 @@ public abstract class UserJourney {
   }
 
   @Test
-  @Order(14)
+  @Order(40)
   void uc3_get_post_details() {
     GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/1", GetPostDetailsResponse.class);
     assertThat(response)
@@ -147,7 +148,7 @@ public abstract class UserJourney {
 
   private String newPostId;
   @Test
-  @Order(15)
+  @Order(50)
   void uc4_get_posts_showsNewlyCreatedOne() {
     GetPostsResponse[] posts = rest.getForObject(baseUrl() + "posts", GetPostsResponse[].class);
     assertThat(posts).describedAs("The posts after creating a new one").hasSize(initialPostsCounts + 1);
@@ -158,14 +159,14 @@ public abstract class UserJourney {
 
 
   @Test
-  @Order(16)
+  @Order(60)
   void uc4_get_new_post_details_shows_initial_comment() {
     GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/" + newPostId, GetPostDetailsResponse.class);
     assertThat(response.comments()).describedAs("Comments are missing at " + baseUrl() + "posts/" + newPostId).hasSize(1);
   }
 
   @Test
-  @Order(17)
+  @Order(70)
   void uc4_create_post_tx_failed() {
     HttpEntity<CreatePostRequest> requestEntity = new HttpEntity<>(
         new CreatePostRequest("x".repeat(254), "Some Body", 15L), basicAuth());
@@ -175,20 +176,20 @@ public abstract class UserJourney {
   }
 
   @Test
-  @Order(18)
+  @Order(80)
   void uc4_get_new_post_details_showsLoggedInUser_in_comment() {
     GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/" + newPostId, GetPostDetailsResponse.class);
     assertThat(response.comments().get(0).name()).isEqualTo("user");
   }
 
   @Test
-  @Order(20)
+  @Order(90)
   void uc5_create_comment_ok() {
     rest.postForObject(baseUrl() + "posts/1/comments", new CreateCommentRequest(NEW_COMMENT, "troll"), Void.class);
   }
 
   @Test
-  @Order(22)
+  @Order(100)
   void uc5_get_post_by_id_shows_new_comment() {
     GetPostDetailsResponse response = rest.getForObject(baseUrl() + "posts/1", GetPostDetailsResponse.class);
     assertThat(response.comments())
@@ -196,14 +197,14 @@ public abstract class UserJourney {
   }
 
   @Test
-  @Order(23)
+  @Order(110)
   void uc5_create_comment_fails_for_locked_post() {
     assertThatThrownBy(() -> rest.postForObject(baseUrl() + "posts/2/comments", new CreateCommentRequest(NEW_COMMENT, "u"), Void.class))
         .hasMessageContaining("Comment Rejected");
   }
 
   @Test
-  @Order(23)
+  @Order(120)
   void uc5_create_comment_fails_for_nonexisting_postId() {
     assertThatThrownBy(() -> rest.postForObject(baseUrl() + "posts/119142/comments",new CreateCommentRequest(NEW_COMMENT, "troll"), Void.class))
         .isInstanceOf(HttpServerErrorException.InternalServerError.class);
