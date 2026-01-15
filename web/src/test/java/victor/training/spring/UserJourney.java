@@ -217,7 +217,7 @@ public abstract class UserJourney {
   }
 
 
-//  @Test
+  @Test
   @Order(300)
   void uc6_get_post_likes() {
     UC6_GetPostLikes.LikeEvent event = new UC6_GetPostLikes.LikeEvent(1L, 1);
