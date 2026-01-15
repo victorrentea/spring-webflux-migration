@@ -32,7 +32,7 @@ public class UC6_GetPostLikes {
 
   }
 
-  @Bean
+//  @Bean // TODO wip
   public Function<Flux<LikeEvent>, Flux<LikedPosts>> onLikeEvent() {
     return flux -> flux
         .doOnNext(event -> log.info("Received {}", event))

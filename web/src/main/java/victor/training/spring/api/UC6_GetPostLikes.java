@@ -26,7 +26,7 @@ public class UC6_GetPostLikes {
 
   public record LikeEvent(long postId, int likes) {
   }
-  @Bean
+//  @Bean
   public Consumer<LikeEvent> onLikeEvent() {
     return likeEvent -> {
       postLikes.put(likeEvent.postId(), likeEvent.likes());

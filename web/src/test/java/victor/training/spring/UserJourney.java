@@ -1,7 +1,6 @@
 package victor.training.spring;
 
 import org.awaitility.Awaitility;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.springframework.amqp.core.Message;
@@ -89,7 +88,6 @@ public abstract class UserJourney {
         }
     );
   }
-  @NotNull
   private static HttpHeaders basicAuth() {
     HttpHeaders headers = new HttpHeaders();
     headers.setBasicAuth("user", "user");
