@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity.CsrfSpec;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -21,7 +22,7 @@ public class FluxSecurity {
         )
         .httpBasic(withDefaults())
         .formLogin(withDefaults())
-        .csrf(csrf -> csrf.disable());
+        .csrf(CsrfSpec::disable);
     return http.build();
   }
 }
