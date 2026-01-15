@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import reactor.core.observability.micrometer.Micrometer;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -18,6 +19,7 @@ import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
 import victor.training.spring.sql.PostRepo;
 
+import java.time.Duration;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -28,6 +30,7 @@ public class UC5_CreateComment {
   private final CommentRepo commentRepo;
   private final WebClient webClient;
   private final MeterRegistry meterRegistry;
+  private final ReactiveStringRedisTemplate redisTemplate;
 
   public record CreateCommentRequest(String comment, String name) {
   }
@@ -37,7 +40,7 @@ public class UC5_CreateComment {
     return postRepo.findById(postId)
         .switchIfEmpty(Mono.error(new NoSuchElementException()))
         .filterWhen(post -> Mono.zip(
-            isUnlocked(post.authorId()),
+            isUnlockedCached(post.authorId()),
             isSafe(post.body(), request.comment()),
             Boolean::logicalAnd))
         .switchIfEmpty(Mono.error(new IllegalArgumentException("Comment Rejected")))
@@ -46,17 +49,28 @@ public class UC5_CreateComment {
         .then();
   }
 
+  private Mono<Boolean> isUnlockedCached(long authorId) {
+    String cacheKey = "flux:author-unlocked:" + authorId;
+    return redisTemplate.opsForValue().get(cacheKey)
+        .map(Boolean::parseBoolean)
+        .doOnNext(v -> log.info("Redis cache hit for author-unlocked:{}", authorId))
+        .switchIfEmpty(Mono.defer(() -> {
+          log.info("Redis cache miss for author-unlocked:{}", authorId);
+          return isUnlocked(authorId)
+              .flatMap(result -> redisTemplate.opsForValue().set(cacheKey, String.valueOf(result), Duration.ofMinutes(10))
+                  .thenReturn(result));
+        }));
+  }
+
   private Mono<Boolean> isUnlocked(long authorId) {
-    Mono<String> result = webClient.get()
+    return webClient.get()
         .uri("http://localhost:9999/author/{authorId}/comments-allowed", authorId)
         .retrieve()
         .bodyToMono(String.class)
-
         .name("isUnlocked") // exposed via /actuator/prometheus
         .tap(Micrometer.metrics(meterRegistry))
-
-        .checkpoint("isUnlocked"); // Experiment: cause 404 by bad URL to see it in action
-    return result.map(Boolean::parseBoolean);
+        .checkpoint("isUnlocked")
+        .map(Boolean::parseBoolean);
   }
 
   private Mono<Boolean> isSafe(String body, String comment) {

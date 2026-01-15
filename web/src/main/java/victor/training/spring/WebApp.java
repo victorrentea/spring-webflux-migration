@@ -25,8 +25,8 @@ import static org.springframework.web.servlet.function.RequestPredicates.GET;
 import static org.springframework.web.servlet.function.RouterFunctions.route;
 import static org.springframework.web.servlet.function.ServerResponse.temporaryRedirect;
 
-@Slf4j
 @EnableCaching
+@Slf4j
 @SpringBootApplication
 public class WebApp {
   public static void main(String[] args) {

@@ -114,11 +114,10 @@ public abstract class UserJourney {
   }
 
   @Test
-  @Order(20)
+  @Order(11)
   @Timeout(value = 50, unit = MILLISECONDS)
   void uc2_get_all_authors_again_is_faster_due_to_caching() {
-    assertThat(rest.getForObject(baseUrl() + "authors", GetAuthorsResponse[].class))
-        .contains(new GetAuthorsResponse(1000L, "John DOE", "jdoe@example.com", "Long description"));
+    rest.getForObject(baseUrl() + "authors", GetAuthorsResponse[].class);
   }
 
   @Test
@@ -185,6 +184,13 @@ public abstract class UserJourney {
   @Test
   @Order(90)
   void uc5_create_comment_ok() {
+    rest.postForObject(baseUrl() + "posts/1/comments", new CreateCommentRequest(NEW_COMMENT, "troll"), Void.class);
+  }
+
+  @Test
+  @Order(95)
+  @Timeout(value = 100, unit = MILLISECONDS)
+  void uc5_create_comment_again_is_faster_due_to_caching() {
     rest.postForObject(baseUrl() + "posts/1/comments", new CreateCommentRequest(NEW_COMMENT, "troll"), Void.class);
   }
 

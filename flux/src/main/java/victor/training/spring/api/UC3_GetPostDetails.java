@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import victor.training.spring.api.UC3_GetPostDetails.GetPostDetailsResponse.CommentResponse;
 import victor.training.spring.sql.Comment;
@@ -42,5 +44,4 @@ public class UC3_GetPostDetails {
             .collectList(),
         GetPostDetailsResponse::new);
   }
-
 }

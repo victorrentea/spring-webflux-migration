@@ -33,6 +33,7 @@ public class UC2_GetAllAuthors {
     }
   }
   @GetMapping("authors")
+  @Cacheable("authors")
   public Flux<GetAuthorsResponse> getAllAuthors() {
      return authorRepo.findAll().flatMap(this::toDto);
   }

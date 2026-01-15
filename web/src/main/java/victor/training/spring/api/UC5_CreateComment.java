@@ -9,11 +9,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import victor.training.spring.lib.BlockingLib;
 import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
 import victor.training.spring.sql.Post;
 import victor.training.spring.sql.PostRepo;
+
+import java.time.Duration;
 
 @Slf4j
 @RestController
@@ -23,6 +26,7 @@ public class UC5_CreateComment {
   private final CommentRepo commentRepo;
   private final RestClient restClient;
   private final MeterRegistry meterRegistry;
+  private final StringRedisTemplate redisTemplate;
 
   public record CreateCommentRequest(String comment, String name) {
   }
@@ -31,12 +35,26 @@ public class UC5_CreateComment {
   public void createComment(@PathVariable long postId, @RequestBody CreateCommentRequest request) {
     Post post = postRepo.findById(postId).orElseThrow();
     boolean safe = isSafe(post.body(), request.comment());
-    boolean unlocked = isUnlocked(post.authorId());
+    boolean unlocked = isUnlockedCached(post.authorId());
     if (safe && unlocked) {
       commentRepo.save(new Comment(post.id(), request.comment(), request.name()));
     } else {
       throw new IllegalArgumentException("Comment Rejected");
     }
+  }
+
+  private boolean isUnlockedCached(long authorId) {
+    String cacheKey = "web:author-unlocked:" + authorId;
+    String cachedValue = redisTemplate.opsForValue().get(cacheKey);
+    if (cachedValue != null) {
+      log.info("Redis cache hit for author-unlocked:{}", authorId);
+      return Boolean.parseBoolean(cachedValue);
+    }
+
+    log.info("Redis cache miss for author-unlocked:{}", authorId);
+    boolean result = isUnlocked(authorId);
+    redisTemplate.opsForValue().set(cacheKey, String.valueOf(result), Duration.ofMinutes(10));
+    return result;
   }
 
   private boolean isUnlocked(long authorId) {

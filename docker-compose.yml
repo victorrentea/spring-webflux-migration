@@ -28,5 +28,10 @@ services:
     command: --async-response-enabled=true
     ports:
       - "9999:8080"
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
 volumes:
   mongo_data:

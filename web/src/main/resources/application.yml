@@ -17,6 +17,8 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
+  cache:
+    type: simple
 
   rabbitmq:
     host: localhost
