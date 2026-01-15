@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.observability.micrometer.Micrometer;
 import reactor.core.publisher.Mono;
-import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
 import victor.training.spring.sql.PostRepo;
 
@@ -29,16 +28,10 @@ public class UC5_CreateComment {
 
   @PostMapping("posts/{postId}/comments")
   public Mono<Void> createComment(@PathVariable long postId, @RequestBody CreateCommentRequest request) {
-    return postRepo.findById(postId)
-        .switchIfEmpty(Mono.error(new IllegalArgumentException("Post not found")))
-        .filterWhen(post -> Mono.zip(
-            isUnlocked(post.authorId()),
-            isSafe(post.body(), request.comment()),
-            Boolean::logicalAnd))
-        .switchIfEmpty(Mono.error(new IllegalArgumentException("Comment Rejected")))
-        .map(post -> new Comment(post.id(), request.comment(), request.name()))
-        .flatMap(commentRepo::save)
-        .then();
+    // TODO check if comments are allowed for the post author (isUnlocked)
+    // TODO check if the comment is safe (isSafe)
+    // TODO if both checks pass, create and save the comment
+    return null; // TODO
   }
 
   private Mono<Boolean> isUnlocked(long authorId) {

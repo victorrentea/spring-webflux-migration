@@ -9,10 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-import victor.training.spring.sql.Post;
 import victor.training.spring.sql.PostRepo;
 
-import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,20 +32,9 @@ public class UC6_GetPostLikes {
 
   @Bean
   public Function<Flux<LikeEvent>, Flux<LikedPosts>> onLikeEvent() {
-    return flux -> flux
-        .doOnNext(event -> log.info("Received {}", event))
-        .doOnNext(event -> postLikes.put(event.postId(), event.likes()))
-        .doOnNext(eventSink::tryEmitNext)
-        .map(LikeEvent::postId)
-        .buffer(Duration.ofSeconds(2))
-        .flatMap(postIds -> postRepo.findAllById(postIds)
-            .map(Post::title)
-            .collectList())
-        .map(LikedPosts::new)
-        .onErrorContinue((e, o) -> log.error("Ignoring element {} for exception {}", o, e.getMessage()))
-        .doOnNext(message -> log.info("Sending {}", message));
+    // TODO process incoming LikeEvent stream to update postLikes map and emit LikedPosts every 2 seconds
+    return null; // TODO
   }
-  // TODO every 1 second emit titles of recently liked posts
 
   public record LikedPosts(Collection<String> titles) {
   }

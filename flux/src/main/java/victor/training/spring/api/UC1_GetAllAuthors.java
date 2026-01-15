@@ -23,8 +23,7 @@ public class UC1_GetAllAuthors {
   @PostConstruct
   public void insertInitialDataInMongo() {
     log.info("Insert in Mongo");
-    authorRepo.save(new Author(1000L, "John DOE", "Long description"))
-        .block(); // ok at startup
+    // TODO
   }
 
   public record GetAuthorsResponse(long id, String name, String email, String bio) {
@@ -38,8 +37,7 @@ public class UC1_GetAllAuthors {
   }
 
   private Mono<GetAuthorsResponse> toDto(Author author) {
-    return contactApi.fetchEmail(author.id())
-        .map(email -> new GetAuthorsResponse(author, email));
+    return null; // TODO
   }
 
   @Component
@@ -50,8 +48,7 @@ public class UC1_GetAllAuthors {
     public Mono<String> fetchEmail(long authorId) {
       log.info("Retrieving email for author {}", authorId);
       String uri = "http://localhost:9999/contact/" + authorId + "/email";
-      return webClient.get().uri(uri).retrieve().bodyToMono(String.class)
-          .cache();
+      return null;// TODO
     }
   }
 }

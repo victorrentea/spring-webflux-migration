@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-import victor.training.spring.api.UC3_GetPostDetails.GetPostDetailsResponse.CommentResponse;
 import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
 import victor.training.spring.sql.Post;
@@ -35,12 +34,7 @@ public class UC3_GetPostDetails {
 
   @GetMapping("posts/{postId}")
   public Mono<GetPostDetailsResponse> getPostDetails(@PathVariable long postId) {
-    return Mono.zip(
-        postRepo.findById(postId),
-        commentRepo.findByPostId(postId)
-            .map(CommentResponse::new)
-            .collectList(),
-        GetPostDetailsResponse::new);
+    return null; // TODO
   }
 
 }
