@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.observability.micrometer.Micrometer;
 import reactor.core.publisher.Mono;
+import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
 import victor.training.spring.sql.PostRepo;
 
@@ -28,13 +29,24 @@ public class UC5_CreateComment {
 
   @PostMapping("posts/{postId}/comments")
   public Mono<Void> createComment(@PathVariable long postId, @RequestBody CreateCommentRequest request) {
-    // TODO check if comments are allowed for the post author (isUnlocked)
-    // TODO check if the comment is safe (isSafe)
-    // TODO if both checks pass, create and save the comment
-    return null; // TODO
+    // TODO check if comments are allowed for the post author (authorAllowsComments)
+    return postRepo.findById(postId)
+
+        .filterWhen(post -> Mono.zip(
+            authorAllowsComments(post.authorId()),
+            isSafe(post.body(), request.comment()),
+            Boolean::logicalAnd)
+
+        )
+
+        // only posts that allow comments will pass through
+        .switchIfEmpty(Mono.error(new IllegalArgumentException("Comment Rejected")))
+
+        .flatMap(post -> commentRepo.save(new Comment(post.id(), request.comment(), request.name())))
+        .then();
   }
 
-  private Mono<Boolean> isUnlocked(long authorId) {
+  private Mono<Boolean> authorAllowsComments(long authorId) {
     String url = "http://localhost:9999/author/" + authorId + "/comments-allowed";
     Mono<String> result = webClient.get()
         .uri(url)

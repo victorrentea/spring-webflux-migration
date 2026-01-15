@@ -21,6 +21,6 @@ public class UC2_GetAllPosts {
   }
   @GetMapping("posts")
   public Flux<GetPostsResponse> getAllPosts() {
-    return null; // TODO
+    return postRepo.findAll().map(GetPostsResponse::new);
   }
 }

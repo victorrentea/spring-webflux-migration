@@ -34,7 +34,13 @@ public class UC3_GetPostDetails {
 
   @GetMapping("posts/{postId}")
   public Mono<GetPostDetailsResponse> getPostDetails(@PathVariable long postId) {
-    return null; // TODO
+    return Mono.zip(
+        postRepo.findById(postId), // cant be empty
+        commentRepo.findByPostId(postId)
+            .map(GetPostDetailsResponse.CommentResponse::new)
+            .collectList(),
+        GetPostDetailsResponse::new
+    );
   }
 
 }
