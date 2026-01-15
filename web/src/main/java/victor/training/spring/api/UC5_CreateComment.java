@@ -39,7 +39,7 @@ public class UC5_CreateComment {
   }
 
   private boolean isUnlocked(long authorId) {
-    String url = "http://localhost:9999/author/" + authorId + "/comments";
+    String url = "http://localhost:9999/author/" + authorId + "/comments-allowed";
     String result = restTemplate.getForObject(url, String.class);
     return Boolean.parseBoolean(result);
   }

@@ -2,7 +2,7 @@
   "priority": 1,
   "request": {
     "method": "GET",
-    "url": "/author/1001/comments"
+    "url": "/author/1001/comments-allowed"
   },
   "response": {
     "status": 200,

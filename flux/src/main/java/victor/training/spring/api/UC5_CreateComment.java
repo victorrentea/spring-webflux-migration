@@ -42,7 +42,7 @@ public class UC5_CreateComment {
   }
 
   private Mono<Boolean> isUnlocked(long authorId) {
-    String url = "http://localhost:9999/author/" + authorId + "/comments";
+    String url = "http://localhost:9999/author/" + authorId + "/comments-allowed";
     Mono<String> result = webClient.get()
         .uri(url)
         .retrieve()

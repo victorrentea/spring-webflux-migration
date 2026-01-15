@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "urlPathPattern": "/author/.*/comments"
+    "urlPathPattern": "/author/.*/comments-allowed"
   },
   "response": {
     "status": 200,
