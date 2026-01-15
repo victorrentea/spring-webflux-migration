@@ -49,9 +49,8 @@ public class UC2_GetAllAuthors {
     @Cacheable("contact-email")
     public Mono<String> fetchEmail(long authorId) {
       log.info("Retrieving email for author {}", authorId);
-      String uri = "http://localhost:9999/contact/" + authorId + "/email";
       return webClient.get()
-          .uri(uri)
+          .uri("http://localhost:9999/contact/{authorId}/email", authorId)
           .retrieve()
           .bodyToMono(String.class)
           .cache();

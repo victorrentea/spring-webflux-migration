@@ -96,7 +96,7 @@ public abstract class UserJourney {
   }
 
   @Test
-  @Order(10)
+  @Order(1)
   void uc1_get_all_posts() {
     GetPostsResponse[] posts = rest.getForObject(baseUrl() + "posts", GetPostsResponse[].class);
     initialPostsCounts = posts.length;
@@ -106,7 +106,7 @@ public abstract class UserJourney {
   }
 
   @Test
-  @Order(1)
+  @Order(10)
   void uc2_get_all_authors() {
     assertThat(rest.getForObject(baseUrl() + "authors", GetAuthorsResponse[].class))
         .contains(new GetAuthorsResponse(1000L, "John DOE", "jdoe@example.com", "Long description"));

@@ -42,9 +42,8 @@ public class UC5_CreateComment {
   }
 
   private Mono<Boolean> isUnlocked(long authorId) {
-    String url = "http://localhost:9999/author/" + authorId + "/comments-allowed";
     Mono<String> result = webClient.get()
-        .uri(url)
+        .uri("http://localhost:9999/author/{authorId}/comments-allowed", authorId)
         .retrieve()
         .bodyToMono(String.class)
         .checkpoint("isCommentUnlocked");
@@ -54,9 +53,8 @@ public class UC5_CreateComment {
   private Mono<Boolean> isSafe(String body, String comment) {
     record Request(String body, String comment) {
     }
-    String url = "http://localhost:9999/safety-check";
     Mono<String> result = webClient.post()
-        .uri(url)
+        .uri("http://localhost:9999/safety-check")
         .bodyValue(new Request(body, comment))
         .retrieve()
         .bodyToMono(String.class)

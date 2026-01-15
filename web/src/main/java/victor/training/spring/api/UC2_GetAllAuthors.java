@@ -7,7 +7,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 import victor.training.spring.mongo.Author;
 import victor.training.spring.mongo.AuthorRepo;
 
@@ -36,17 +36,18 @@ public class UC2_GetAllAuthors {
   public List<GetAuthorsResponse> getAllAuthors() {
     return authorRepo.findAll().stream().map(author -> new GetAuthorsResponse(author, contactApi.fetchEmail(author.id()))).collect(Collectors.toList());
   }
-  // TODO how many calls in parallel?
 
   @Component
   @RequiredArgsConstructor
   public static class ContactApi {
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
     @Cacheable("contact-email")
     public String fetchEmail(long authorId) {
       log.info("Retrieving email for author {}", authorId);
-      String uri = "http://localhost:9999/contact/" + authorId + "/email";
-      return restTemplate.getForObject(uri, String.class);
+      return restClient.get()
+          .uri("http://localhost:9999/contact/{authorId}/email", authorId)
+          .retrieve()
+          .body(String.class);
     }
   }
 }

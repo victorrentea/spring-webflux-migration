@@ -1,8 +1,8 @@
 package victor.training.spring.util;
 
 import org.awaitility.Awaitility;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
@@ -23,8 +23,11 @@ public class WaitForApp {
   private static void springBootActuatorUP(String baseUrl) {
     try {
       System.out.printf(".");
-      RestTemplate restTemplate = new RestTemplate();
-      Map<String, Object> responseMap = restTemplate.getForObject(baseUrl + "/actuator/health", Map.class);
+      RestClient restClient = RestClient.create();
+      Map<String, Object> responseMap = restClient.get()
+          .uri(baseUrl + "/actuator/health")
+          .retrieve()
+          .body(Map.class);
       if (!responseMap.get("status").equals("UP")) {
         throw new AssertionError("Not started yet: " + responseMap);
       }

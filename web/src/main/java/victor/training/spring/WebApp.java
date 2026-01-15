@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.servlet.function.RouterFunction;
 import org.springframework.web.servlet.function.ServerResponse;
 
@@ -34,8 +34,8 @@ public class WebApp {
   }
 
   @Bean
-  public RestTemplate restTemplate() {
-    return new RestTemplate();
+  public RestClient restClient(RestClient.Builder builder) {
+    return builder.build();
   }
 
   @Slf4j
