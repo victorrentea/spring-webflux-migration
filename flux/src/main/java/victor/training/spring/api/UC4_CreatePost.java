@@ -52,11 +52,11 @@ public class UC4_CreatePost {
         .map(name -> new Comment(postId, "Posted on " + now() + ": " + postTitle, name));
   }
 
-  private final Sender sender;
+  private final Sender reactiveSender;
   public Mono<Void> sendPostCreatedEvent(String message) {
     log.info("Sending message: " + message);
     OutboundMessage outboundMessage = new OutboundMessage("", "post-created-event", message.getBytes());
-    return sender.sendWithPublishConfirms(Mono.just(outboundMessage)).then();
+    return reactiveSender.sendWithPublishConfirms(Mono.just(outboundMessage)).then();
   }
 
   // to propagate security context in a fire-and-forget flow, use:

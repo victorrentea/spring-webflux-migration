@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
+import victor.training.spring.lib.BlockingLib;
 import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
 import victor.training.spring.sql.Post;
@@ -47,14 +48,6 @@ public class UC5_CreateComment {
   }
 
   private boolean isSafe(String postBody, String comment) {
-    record Request(String body, String comment) {
-    }
-    String result = meterRegistry.timer("isCommentSafe") // exposed via /actuator/prometheus
-        .record(() -> restClient.post()
-            .uri("http://localhost:9999/safety-check")
-            .body(new Request(postBody, comment))
-            .retrieve()
-            .body(String.class));
-    return "OK".equals(result);
+    return BlockingLib.isSafe(postBody, comment);
   }
 }

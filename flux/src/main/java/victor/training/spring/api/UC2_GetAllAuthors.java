@@ -46,6 +46,7 @@ public class UC2_GetAllAuthors {
   @RequiredArgsConstructor
   public static class ContactApi {
     private final WebClient webClient;
+
     @Cacheable("contact-email-cache") // automatically does Publisher.cache()
     public Mono<String> fetchEmail(long authorId) {
       log.info("Retrieving email for author {}", authorId);
@@ -53,8 +54,7 @@ public class UC2_GetAllAuthors {
           .uri("http://localhost:9999/contact/{authorId}/email", authorId)
           .retrieve()
           .bodyToMono(String.class)
-          .doOnSubscribe(s -> log.info("Calling Contact API for author {}", authorId))
-          ;
+          .doOnSubscribe(s -> log.info("Calling Contact API for author {}", authorId));
     }
   }
 }

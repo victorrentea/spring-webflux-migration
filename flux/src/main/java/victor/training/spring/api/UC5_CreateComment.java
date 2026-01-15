@@ -8,9 +8,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.observability.micrometer.Micrometer;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import victor.training.spring.lib.BlockingLib;
 import victor.training.spring.sql.Comment;
 import victor.training.spring.sql.CommentRepo;
 import victor.training.spring.sql.PostRepo;
@@ -48,21 +51,17 @@ public class UC5_CreateComment {
         .uri("http://localhost:9999/author/{authorId}/comments-allowed", authorId)
         .retrieve()
         .bodyToMono(String.class)
-        .checkpoint("isCommentUnlocked");
+
+        .name("isUnlocked") // exposed via /actuator/prometheus
+        .tap(Micrometer.metrics(meterRegistry))
+
+        .checkpoint("isUnlocked"); // Experiment: cause 404 by bad URL to see it in action
     return result.map(Boolean::parseBoolean);
   }
 
   private Mono<Boolean> isSafe(String body, String comment) {
-    record Request(String body, String comment) {
-    }
-    Mono<String> result = webClient.post()
-        .uri("http://localhost:9999/safety-check")
-        .bodyValue(new Request(body, comment))
-        .retrieve()
-        .bodyToMono(String.class)
-
-        .name("isCommentSafe") // exposed via /actuator/prometheus
-        .tap(Micrometer.metrics(meterRegistry));
-    return result.map("OK"::equals);
+    return Mono.fromCallable(() -> BlockingLib.isSafe(body, comment))
+        .publishOn(Schedulers.boundedElastic());
+    // ± using VirtualThreads: see https://projectreactor.io/docs/core/release/reference/coreFeatures/schedulers.html
   }
 }
