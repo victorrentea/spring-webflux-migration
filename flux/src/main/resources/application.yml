@@ -38,3 +38,12 @@ logging:
 #    io.r2dbc.postgresql.QUERY: DEBUG
 #    org.springframework.data.r2dbc: TRACE
     org.springframework.r2dbc: TRACE
+management:
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"

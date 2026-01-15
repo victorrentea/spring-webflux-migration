@@ -1,7 +1,6 @@
 package victor.training.spring;
 
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -10,12 +9,8 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilter;
-import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import java.io.PrintWriter;
@@ -39,12 +34,11 @@ public class FluxApp {
   @RestControllerAdvice
   static class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String handle(Exception e) {
+    public Mono<ResponseEntity<String>> handle(Exception e) {
       log.error("Error: " + e, e);
       StringWriter sw = new StringWriter();
       e.printStackTrace(new PrintWriter(sw));
-      return sw.toString(); // security breach! Don't do this in your project. It's just for easier debugging
+      return Mono.just(ResponseEntity.internalServerError().body(sw.toString())); // security breach! Don't do this in your project. It's just for easier debugging
     }
   }
 

@@ -37,3 +37,12 @@ logging:
     org.springframework.amqp.rabbit: DEBUG
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 
+management:
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
