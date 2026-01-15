@@ -18,8 +18,8 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import victor.training.spring.api.UC1_GetAllAuthors.GetAuthorsResponse;
-import victor.training.spring.api.UC2_GetAllPosts.GetPostsResponse;
+import victor.training.spring.api.UC2_GetAllAuthors.GetAuthorsResponse;
+import victor.training.spring.api.UC1_GetAllPosts.GetPostsResponse;
 import victor.training.spring.api.UC5_CreateComment.CreateCommentRequest;
 import victor.training.spring.api.UC6_GetPostLikes;
 import victor.training.spring.util.WaitForApp;
@@ -96,8 +96,18 @@ public abstract class UserJourney {
   }
 
   @Test
+  @Order(10)
+  void uc1_get_all_posts() {
+    GetPostsResponse[] posts = rest.getForObject(baseUrl() + "posts", GetPostsResponse[].class);
+    initialPostsCounts = posts.length;
+    assertThat(posts)
+        .contains(new GetPostsResponse(1L, "Hello world!"))
+        .contains(new GetPostsResponse(2L, "Locked Post"));
+  }
+
+  @Test
   @Order(1)
-  void uc1_get_all_authors() {
+  void uc2_get_all_authors() {
     assertThat(rest.getForObject(baseUrl() + "authors", GetAuthorsResponse[].class))
         .contains(new GetAuthorsResponse(1000L, "John DOE", "jdoe@example.com", "Long description"));
   }
@@ -108,16 +118,6 @@ public abstract class UserJourney {
   void uc2_get_all_authors_again_is_faster_due_to_caching() {
     assertThat(rest.getForObject(baseUrl() + "authors", GetAuthorsResponse[].class))
         .contains(new GetAuthorsResponse(1000L, "John DOE", "jdoe@example.com", "Long description"));
-  }
-
-  @Test
-  @Order(10)
-  void uc2_get_all_posts() {
-    GetPostsResponse[] posts = rest.getForObject(baseUrl() + "posts", GetPostsResponse[].class);
-    initialPostsCounts = posts.length;
-    assertThat(posts)
-        .contains(new GetPostsResponse(1L, "Hello world!"))
-        .contains(new GetPostsResponse(2L, "Locked Post"));
   }
 
   @Test
@@ -212,7 +212,7 @@ public abstract class UserJourney {
 
 //  @Test
   @Order(300)
-  void uc6_getPostLikes() {
+  void uc6_get_post_likes() {
     UC6_GetPostLikes.LikeEvent event = new UC6_GetPostLikes.LikeEvent(1L, 1);
     rabbitTemplate.convertAndSend("likes", "likes.web", event);
     rabbitTemplate.convertAndSend("likes", "likes.flux", event);

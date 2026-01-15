@@ -12,7 +12,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class UC2_GetAllPosts {
+public class UC1_GetAllPosts {
   private final PostRepo postRepo;
 
   public record GetPostsResponse(long id, String title) {

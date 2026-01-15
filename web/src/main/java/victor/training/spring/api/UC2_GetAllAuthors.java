@@ -7,24 +7,24 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestTemplate;
 import victor.training.spring.mongo.Author;
 import victor.training.spring.mongo.AuthorRepo;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class UC1_GetAllAuthors {
-  private final AuthorRepo authorRepo; // Mongo
+public class UC2_GetAllAuthors {
+  private final AuthorRepo authorRepo; // MongoDB
   private final ContactApi contactApi;
 
   @PostConstruct
   public void insertInitialDataInMongo() {
     log.info("Insert in Mongo");
-    authorRepo.save(new Author(1000L, "John DOE", "Long description"))
-        .block(); // ok at startup, in main thread
+    authorRepo.save(new Author(1000L, "John DOE", "Long description"));
   }
 
   public record GetAuthorsResponse(long id, String name, String email, String bio) {
@@ -33,28 +33,20 @@ public class UC1_GetAllAuthors {
     }
   }
   @GetMapping("authors")
-  public Flux<GetAuthorsResponse> getAllAuthors() {
-     return authorRepo.findAll().flatMap(this::toDto);
+  public List<GetAuthorsResponse> getAllAuthors() {
+    return authorRepo.findAll().stream().map(author -> new GetAuthorsResponse(author, contactApi.fetchEmail(author.id()))).collect(Collectors.toList());
   }
-
-  private Mono<GetAuthorsResponse> toDto(Author author) {
-    return contactApi.fetchEmail(author.id())
-        .map(email -> new GetAuthorsResponse(author, email));
-  }
+  // TODO how many calls in parallel?
 
   @Component
   @RequiredArgsConstructor
   public static class ContactApi {
-    private final WebClient webClient;
+    private final RestTemplate restTemplate;
     @Cacheable("contact-email")
-    public Mono<String> fetchEmail(long authorId) {
+    public String fetchEmail(long authorId) {
       log.info("Retrieving email for author {}", authorId);
       String uri = "http://localhost:9999/contact/" + authorId + "/email";
-      return webClient.get()
-          .uri(uri)
-          .retrieve()
-          .bodyToMono(String.class)
-          .cache();
+      return restTemplate.getForObject(uri, String.class);
     }
   }
 }
